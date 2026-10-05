@@ -362,9 +362,9 @@ class TimerToolApp:
         self.trans_key = "#000001"
         self.bg_color = "#121418" # พื้นหลังคุมโทน MS แท้ๆ
         
-        # ขนาดเริ่มต้น Default สัดส่วนกะทัดรัดใหม่ (กว้างพอดีและไม่ล้นจอ)
-        self.full_w = 170
-        self.full_h = 380
+        # ขนาดเริ่มต้น Default V.2 หน้าต่างหลักแนวนอน (กดรูป ⏰ เพื่อสลับเป็น Vertical Sidebar)
+        self.full_w = 460
+        self.full_h = 355
         self.mini_w = 560
         self.mini_h = 72
         
@@ -3025,6 +3025,32 @@ class TimerToolApp:
         self.setup_ui_elements()
         self.save_config()
 
+    def toggle_vertical_hud_mode(self, e=None):
+        """สลับโหมดหน้าต่างระหว่าง V.2 ปกติ (แนวนอน 460x275) กับ Vertical Sidebar (แถบข้าง 170x380)"""
+        try:
+            cur_x = self.win_bg.winfo_x()
+            cur_y = self.win_bg.winfo_y()
+            if cur_x > -10000 and cur_y > -10000:
+                self.pos_x = cur_x
+                self.pos_y = cur_y
+        except Exception:
+            pass
+
+        if getattr(self, 'full_w', 460) <= 240:
+            # อยู่โหมดแนวตั้ง (Sidebar 170px) -> สลับกลับเป็น V.2 แนวนอนเดิม (460x275)
+            self.full_w = 460
+            self.full_h = 355
+            self.is_compact_folded = True
+        else:
+            # อยู่โหมดแนวนอน V.2 -> สลับเป็น Vertical Sidebar (170x380)
+            self.full_w = 170
+            self.full_h = 380
+            self.is_compact_folded = True
+
+        self.apply_geometry()
+        self.setup_ui_elements()
+        self.save_config()
+
     def update_auto_scale_ui(self, width=None):
         """ออโต้สเกลขนาดตัวอักษรและรูปแบบข้อความในกรอบสีเขียวตามความกว้างหน้าต่างจริง Real-time"""
         if getattr(self, 'is_mini', False):
@@ -3870,13 +3896,13 @@ class TimerToolApp:
             btn_alpha.bind("<Enter>", lambda e: btn_alpha.config(fg="#ffffff"))
             btn_alpha.bind("<Leave>", lambda e: btn_alpha.config(fg="#38bdf8"))
 
-            # ฝั่งซ้ายของ Title Bar
+            # ฝั่งซ้ายของ Title Bar: ปุ่มรูปนาฬิกาสำหรับกดสลับโหมด V.2 <-> Vertical Sidebar
             title_text = "⏰" if is_vert else "⏰ COS Clock"
-            lbl_title = tk.Label(top_bar, text=title_text, font=("Segoe UI", 8, "bold"), fg="#38bdf8", bg="#121824")
+            lbl_title = tk.Label(top_bar, text=title_text, font=("Segoe UI", 8, "bold"), fg="#38bdf8", bg="#121824", cursor="hand2")
             lbl_title.pack(side=tk.LEFT, padx=(3 if is_vert else 6, 2))
-            lbl_title.bind("<ButtonPress-1>", self.start_drag)
-            lbl_title.bind("<B1-Motion>", self.do_drag)
-            lbl_title.bind("<ButtonRelease-1>", self.end_drag)
+            lbl_title.bind("<Button-1>", lambda e: self.toggle_vertical_hud_mode())
+            lbl_title.bind("<Enter>", lambda e: lbl_title.config(fg="#ffffff"))
+            lbl_title.bind("<Leave>", lambda e: lbl_title.config(fg="#38bdf8"))
             self.lbl_title = lbl_title
 
             srv_text = f"[{self.server_name[:1]}▾]" if is_vert else f"[{self.server_name}▾]"
@@ -3939,7 +3965,7 @@ class TimerToolApp:
             # 1. Left / Top: Timer Zone
             if is_vert:
                 f_timer_zone = tk.Frame(f_pool_zone, bg=self.trans_key, bd=0)
-                f_timer_zone.pack(side=tk.TOP, fill=tk.X, padx=2, pady=(0, 2))
+                f_timer_zone.pack(side=tk.TOP, fill=tk.X, padx=1, pady=(0, 1))
             else:
                 f_timer_zone = tk.Frame(f_pool_zone, bg=self.trans_key, bd=0, width=108)
                 f_timer_zone.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 2), pady=0)
@@ -3948,29 +3974,30 @@ class TimerToolApp:
             f_timer_zone.bind("<B1-Motion>", self.do_drag)
             f_timer_zone.bind("<ButtonRelease-1>", self.end_drag)
 
-            lbl_t_header = StrokeLabel(f_timer_zone, text="⏱️ 20m Cycle", font=("Segoe UI", 7, "bold"),
+            lbl_t_header = StrokeLabel(f_timer_zone, text="⏱️ 20m Cycle", font=("Segoe UI", 6 if is_vert else 7, "bold"),
                                        fg="#94a3b8", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="center")
-            lbl_t_header.pack(pady=(2, 1))
+            lbl_t_header.pack(pady=(1, 0) if is_vert else (2, 1))
             lbl_t_header.bind("<ButtonPress-1>", self.start_drag)
             lbl_t_header.bind("<B1-Motion>", self.do_drag)
             lbl_t_header.bind("<ButtonRelease-1>", self.end_drag)
 
             f_timer_box = tk.Frame(f_timer_zone, bg=self.trans_key, bd=0)
-            f_timer_box.pack(fill=tk.X, padx=5, pady=(0, 2))
+            f_timer_box.pack(fill=tk.X, padx=3 if is_vert else 5, pady=(0, 1) if is_vert else (0, 2))
             f_timer_box.bind("<ButtonPress-1>", self.start_drag)
             f_timer_box.bind("<B1-Motion>", self.do_drag)
             f_timer_box.bind("<ButtonRelease-1>", self.end_drag)
 
-            self.lbl_timer_text = StrokeLabel(f_timer_box, text="00:00", font=("Consolas", 15, "bold"),
+            timer_f_sz = 13 if is_vert else 15
+            self.lbl_timer_text = StrokeLabel(f_timer_box, text="00:00", font=("Consolas", timer_f_sz, "bold"),
                                               fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=2, anchor="center")
-            self.lbl_timer_text.pack(pady=1)
+            self.lbl_timer_text.pack(pady=0 if is_vert else 1)
             self.lbl_timer_text.bind("<ButtonPress-1>", self.start_drag)
             self.lbl_timer_text.bind("<B1-Motion>", self.do_drag)
             self.lbl_timer_text.bind("<ButtonRelease-1>", self.end_drag)
 
             # 🗺️ ปุ่มควบคุมแถวคู่: Scan Map และ Character OCR
             f_timer_btns = tk.Frame(f_timer_zone, bg=self.trans_key)
-            f_timer_btns.pack(pady=(1, 2), padx=3, fill=tk.X)
+            f_timer_btns.pack(pady=(1, 1) if is_vert else (1, 2), padx=2 if is_vert else 3, fill=tk.X)
 
             self.btn_timer_scan = tk.Label(f_timer_btns, text="🔍 Map", font=("Segoe UI", 7, "bold"),
                                            fg="#38bdf8", bg="#16202c", relief="solid", bd=1, cursor="hand2", padx=2, pady=1)
@@ -3980,26 +4007,26 @@ class TimerToolApp:
             self.btn_char_ocr = tk.Label(f_timer_btns, text="👤 Char", font=("Segoe UI", 7, "bold"),
                                          fg="#a855f7", bg="#1e1b2e", relief="solid", bd=1, cursor="hand2", padx=2, pady=1)
             self.btn_char_ocr.pack(side=tk.LEFT, expand=True, fill=tk.X)
-            self.btn_char_ocr.bind("<Button-1>", lambda e: self.auto_detect_character_async(silent=False))
-            self.btn_char_ocr.bind("<Button-3>", lambda e: self.open_char_crop_tool())
+            self.btn_char_ocr.bind("<Button-1>", lambda e: self.open_char_crop_tool())
 
             # Canvas เส้นเวลา
-            self.canvas_timer_bar = tk.Canvas(f_timer_zone, bg="#050a12", height=6, highlightthickness=0)
-            self.canvas_timer_bar.pack(fill=tk.X, padx=4, pady=(1, 3))
+            tb_h = 3 if is_vert else 6
+            self.canvas_timer_bar = tk.Canvas(f_timer_zone, bg="#050a12", height=tb_h, highlightthickness=0)
+            self.canvas_timer_bar.pack(fill=tk.X, padx=3 if is_vert else 4, pady=(1, 1) if is_vert else (1, 3))
             self.canvas_timer_bar.bind("<ButtonPress-1>", self.start_drag)
             self.canvas_timer_bar.bind("<B1-Motion>", self.do_drag)
             self.canvas_timer_bar.bind("<ButtonRelease-1>", self.end_drag)
 
             # 💰 กล่องคู่กระเป๋า NESO & Nesolet วางใต้เส้นเวลาใน Timer Zone
             f_wal_container = tk.Frame(f_timer_zone, bg="#08101a")
-            f_wal_container.pack(side=tk.TOP, fill=tk.X, padx=2, pady=(2, 2))
+            f_wal_container.pack(side=tk.TOP, fill=tk.X, padx=1 if is_vert else 2, pady=(1, 1) if is_vert else (2, 2))
 
             # กล่องกระเป๋า NESO (คลิกเปิด Modal ได้)
             f_wal_neso = tk.Frame(f_wal_container, bg="#1a1c29", bd=1, relief="solid", cursor="hand2")
             f_wal_neso.pack(side=tk.LEFT, expand=True, fill=tk.BOTH, padx=(0, 1))
             f_wal_neso.bind("<Button-1>", lambda e: self.open_wallet_inapp_modal())
 
-            self.lbl_wallet_neso_val = tk.Label(f_wal_neso, text="...\nNESO", font=("Consolas", 7, "bold"), fg="#c084fc", bg="#1a1c29", justify="center", padx=2, pady=2)
+            self.lbl_wallet_neso_val = tk.Label(f_wal_neso, text="...\nNESO", font=("Consolas", 6 if is_vert else 7, "bold"), fg="#c084fc", bg="#1a1c29", justify="center", padx=1 if is_vert else 2, pady=1 if is_vert else 2)
             self.lbl_wallet_neso_val.pack(anchor="center")
             self.lbl_wallet_neso_val.bind("<Button-1>", lambda e: self.open_wallet_inapp_modal())
 
@@ -4007,12 +4034,12 @@ class TimerToolApp:
             f_wal_nesolet = tk.Frame(f_wal_container, bg="#231433", bd=1, relief="solid")
             f_wal_nesolet.pack(side=tk.LEFT, expand=True, fill=tk.BOTH, padx=(1, 0))
 
-            self.lbl_nesolet = tk.Label(f_wal_nesolet, text="...\nNesolet", font=("Consolas", 7, "bold"), fg="#d8b4fe", bg="#231433", justify="center", padx=2, pady=2)
+            self.lbl_nesolet = tk.Label(f_wal_nesolet, text="...\nNesolet", font=("Consolas", 6 if is_vert else 7, "bold"), fg="#d8b4fe", bg="#231433", justify="center", padx=1 if is_vert else 2, pady=1 if is_vert else 2)
             self.lbl_nesolet.pack(anchor="center")
 
             # 🪙 กล่องเหรียญ NESO 2 กล่องมาเรียงคู่กันใต้ตัวจับเวลา (ตามรูปกรอบสีน้ำตาลในแถบเขียวทึบ)
             f_timer_badges = tk.Frame(f_timer_zone, bg="#08101a")
-            f_timer_badges.pack(side=tk.TOP if is_vert else tk.BOTTOM, fill=tk.X, padx=3, pady=(0, 3))
+            f_timer_badges.pack(side=tk.TOP if is_vert else tk.BOTTOM, fill=tk.X, padx=1 if is_vert else 3, pady=(1, 1) if is_vert else (0, 3))
             f_timer_badges.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
             coin_img = self.get_neso_coin_photo(size=18)
@@ -4270,9 +4297,11 @@ class TimerToolApp:
             f_cmd_box.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
             self.f_cmd_box = f_cmd_box
 
-            # Grip ปรับขนาดมุมขวาล่างของกรอบ Pool (วาง pack(side=tk.RIGHT) ก่อนตามกฎเหล็ก!)
-            self.grip_pool = tk.Label(f_cmd_box, text=" ◢ ", font=("Segoe UI", 9, "bold"),
-                                      fg="#38bdf8", bg=self.trans_key, cursor="size_nw_se", padx=2, pady=1)
+            # Grip ปรับขนาดมุมขวาล่างของกรอบ Pool (กรอบสีแดงขาว ล่าง ขวา ตามคำสั่งผู้ใช้!)
+            self.grip_pool = tk.Label(f_cmd_box, text=" ◢ ", font=("Segoe UI", 8, "bold"),
+                                      fg="#ffffff", bg="#dc2626", relief="solid", bd=1,
+                                      highlightbackground="#ffffff", highlightthickness=1,
+                                      cursor="size_nw_se", padx=2, pady=0)
             self.grip_pool.pack(side=tk.RIGHT, anchor="se")
             self.grip_pool.bind("<ButtonPress-1>", self.start_resize)
             self.grip_pool.bind("<B1-Motion>", self.do_resize)
@@ -4295,29 +4324,36 @@ class TimerToolApp:
             # 🔴 กรอบแดงด้านล่างสุด (รวมส่วนอื่นๆ)
             # ---------------------------------------------------------
             f_red_box = tk.Frame(self.main_container, bg="#2a1616", bd=1, highlightbackground="#ef4444", highlightthickness=1)
-            f_red_box.pack(side=tk.BOTTOM, fill=tk.X, padx=6, pady=(1, 3))
+            f_red_box.pack(side=tk.BOTTOM, fill=tk.X, padx=4 if is_vert else 6, pady=(1, 2))
             self.f_red_box = f_red_box
 
             # ---------------------------------------------------------
             # 🔵 แถบพับ/กาง หน้าต่างย่อแบบรูปที่ 1 (ซ่อนเฉพาะแถบแดงล่าง ข้อมูลบนครบถ้วน)
             # ---------------------------------------------------------
             f_fold_bar = tk.Frame(self.main_container, bg=self.trans_key)
-            f_fold_bar.pack(side=tk.BOTTOM, fill=tk.X, padx=6, pady=(0, 2))
+            f_fold_bar.pack(side=tk.BOTTOM, fill=tk.X, padx=4 if is_vert else 6, pady=(0, 2))
 
-            # 🕹️ Grip ปรับขนาดมุมขวาล่างสุดของหน้าต่าง
-            self.grip_fold = tk.Label(f_fold_bar, text=" ◢ ", font=("Segoe UI", 9, "bold"),
-                                      fg="#38bdf8", bg="#161c28", cursor="size_nw_se", padx=3, pady=1, relief="groove", bd=1)
-            self.grip_fold.pack(side=tk.RIGHT, padx=2)
+            # 🕹️ Grip ปรับขนาดมุมขวาล่างสุดของหน้าต่าง (กรอบสีแดงขาว ล่าง ขวา ตามคำสั่งผู้ใช้!)
+            self.grip_fold = tk.Label(f_fold_bar, text=" ◢ ", font=("Segoe UI", 8, "bold"),
+                                      fg="#ffffff", bg="#dc2626", relief="solid", bd=1,
+                                      highlightbackground="#ffffff", highlightthickness=1,
+                                      cursor="size_nw_se", padx=2, pady=0)
+            self.grip_fold.pack(side=tk.RIGHT, padx=1)
             self.grip_fold.bind("<ButtonPress-1>", self.start_resize)
             self.grip_fold.bind("<B1-Motion>", self.do_resize)
             self.grip_fold.bind("<ButtonRelease-1>", self.end_resize)
 
-            btn_fold_txt = "▲ กางแถบควบคุมล่าง" if getattr(self, 'is_compact_folded', False) else "▼ พับเก็บแถบล่าง"
+            if is_vert:
+                btn_fold_txt = "▲ แถบล่าง" if getattr(self, 'is_compact_folded', False) else "▼ พับล่าง"
+                fold_pad_x = 4
+            else:
+                btn_fold_txt = "▲ กางแถบควบคุมล่าง" if getattr(self, 'is_compact_folded', False) else "▼ พับเก็บแถบล่าง"
+                fold_pad_x = 8
             btn_fold_bg = "#2a1616" if getattr(self, 'is_compact_folded', False) else "#161c28"
             btn_fold_fg = "#fca5a5" if getattr(self, 'is_compact_folded', False) else "#64748b"
 
             self.btn_fold_toggle = tk.Label(f_fold_bar, text=btn_fold_txt, font=("Segoe UI", 6, "bold"),
-                                           fg=btn_fold_fg, bg=btn_fold_bg, relief="solid", bd=1, cursor="hand2", padx=8, pady=1)
+                                           fg=btn_fold_fg, bg=btn_fold_bg, relief="solid", bd=1, cursor="hand2", padx=fold_pad_x, pady=1)
             self.btn_fold_toggle.pack(anchor="center")
             self.btn_fold_toggle.bind("<Button-1>", self.toggle_compact_fold)
 
