@@ -363,12 +363,12 @@ class TimerToolApp:
         self.bg_color = "#121418" # พื้นหลังคุมโทน MS แท้ๆ
         
         # ขนาดเริ่มต้น Default V.2 หน้าต่างหลักแนวนอน และ Vertical Sidebar
-        self.v2_w = 460
-        self.v2_h = 355
+        self.v2_w = 491
+        self.v2_h = 418
         self.sidebar_w = 210
         self.sidebar_h = 535
-        self.full_w = 460
-        self.full_h = 355
+        self.full_w = 491
+        self.full_h = 418
         self.mini_w = 560
         self.mini_h = 72
         self.custom_font_size = 0  # 0 = ค่ามาตรฐานตามระบบออโต้สเกล, หรือระบุขนาดเจาะจง (เช่น 7, 8, 9, 10)
@@ -794,15 +794,15 @@ class TimerToolApp:
 
             # 🔘 2. กล่องไอคอนด้านซ้าย (Icon Box)
             canvas.create_rectangle(box_x1 + 2, box_y1 + 2, box_icon_x - 1, box_y2 - 2, outline="#eab308", width=1, dash=(3, 2), tags="guidelines")
-            canvas.create_text(box_x1 + ((box_icon_x - box_x1) // 2), box_y1 + (h // 2), text="Icon", fill="#cbd5e1", font=("Segoe UI", 8, "bold"), tags="guidelines")
+            canvas.create_text(box_x1 + ((box_icon_x - box_x1) // 2), box_y1 + (h // 2), text="Icon", fill="#cbd5e1", font=("Segoe UI", 9, "bold"), tags="guidelines")
 
             # 🔴 3. กล่องสีแดง (Main Zone แถวบน เช่น Scrapyard)
             canvas.create_rectangle(box_icon_x + 2, box_y1 + 2, box_x2 - 2, box_mid_y - 1, outline="#ef4444", width=2, tags="guidelines")
-            canvas.create_text(box_icon_x + 6, box_y1 + 3, text="🔴 Main Zone (โซนใหญ่)", fill="#ef4444", font=("Segoe UI", 7, "bold"), anchor="nw", tags="guidelines")
+            canvas.create_text(box_icon_x + 6, box_y1 + 3, text="🔴 Main Zone (โซนใหญ่)", fill="#ef4444", font=("Segoe UI", 8, "bold"), anchor="nw", tags="guidelines")
 
             # 🔵 4. กล่องสีฟ้า (Sub Map แถวล่าง เช่น Scrapyard Entrance)
             canvas.create_rectangle(box_icon_x + 2, box_mid_y + 1, box_x2 - 2, box_y2 - 2, outline="#38bdf8", width=2, tags="guidelines")
-            canvas.create_text(box_icon_x + 6, box_mid_y + 3, text="🔵 Sub Map (จุดยืนจริง)", fill="#38bdf8", font=("Segoe UI", 7, "bold"), anchor="nw", tags="guidelines")
+            canvas.create_text(box_icon_x + 6, box_mid_y + 3, text="🔵 Sub Map (จุดยืนจริง)", fill="#38bdf8", font=("Segoe UI", 8, "bold"), anchor="nw", tags="guidelines")
 
             # ↕️ 5. เส้นแบ่งกลาง (Mid Line Handle - ปรับระดับแบ่งแถว 1 กับ 2)
             canvas.create_line(box_icon_x, box_mid_y, box_x2, box_mid_y, fill="#ffffff", width=2, dash=(4, 2), tags="guidelines")
@@ -814,7 +814,7 @@ class TimerToolApp:
 
             # 📏 ป้ายบอกขนาดและคำแนะนำ
             canvas.create_text(box_x1, max(50, box_y1 - 18), text=f"📍 Master Header: {w}x{h} px | ลากเส้นบน-ล่าง-กลาง เพื่อจัดระดับ", 
-                               fill="#facc15", font=("Segoe UI", 9, "bold"), anchor="nw", tags="guidelines")
+                               fill="#facc15", font=("Segoe UI", 10, "bold"), anchor="nw", tags="guidelines")
 
         # 4. ฟังก์ชันตรวจจับว่าเมาส์อยู่ใกล้เส้นไหน
         def get_hover_target(x, y):
@@ -980,20 +980,20 @@ class TimerToolApp:
         ctrl_frame.place(relx=0.5, y=28, anchor="n")
 
         lbl_tip = tk.Label(ctrl_frame, text="🖱️ ลากเส้น [ ขอบบน / ขอบล่าง / เส้นแบ่งกลาง / เส้นไอคอน ] ขึ้น-ลง หรือ ซ้าย-ขวา ปรับให้ตรงตามต้องการ", 
-                           font=("Segoe UI", 9), fg="#94a3b8", bg="#0f172a", padx=10, pady=6)
+                           font=("Segoe UI", 11), fg="#94a3b8", bg="#0f172a", padx=10, pady=6)
         lbl_tip.pack(side=tk.LEFT)
 
-        btn_save = tk.Button(ctrl_frame, text="💾 บันทึกกรอบ", font=("Segoe UI", 9, "bold"), fg="#ffffff", bg="#10b981", 
+        btn_save = tk.Button(ctrl_frame, text="💾 บันทึกกรอบ", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#10b981", 
                              activebackground="#059669", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=12, pady=4,
                              command=save_and_close)
         btn_save.pack(side=tk.LEFT, padx=6, pady=4)
 
-        btn_reset = tk.Button(ctrl_frame, text="🔄 รีเซ็ต", font=("Segoe UI", 9), fg="#e2e8f0", bg="#334155", 
+        btn_reset = tk.Button(ctrl_frame, text="🔄 รีเซ็ต", font=("Segoe UI", 11), fg="#e2e8f0", bg="#334155", 
                               activebackground="#475569", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=8, pady=4,
                               command=reset_to_game)
         btn_reset.pack(side=tk.LEFT, padx=4, pady=4)
 
-        btn_cancel = tk.Button(ctrl_frame, text="❌ ยกเลิก (ESC)", font=("Segoe UI", 9), fg="#f87171", bg="#1e293b", 
+        btn_cancel = tk.Button(ctrl_frame, text="❌ ยกเลิก (ESC)", font=("Segoe UI", 11), fg="#f87171", bg="#1e293b", 
                                activebackground="#3d1b1b", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=8, pady=4,
                                command=cancel_crop)
         btn_cancel.pack(side=tk.LEFT, padx=(4, 8), pady=4)
@@ -1141,9 +1141,9 @@ class TimerToolApp:
             canvas.create_rectangle(box_x1, box_y1, box_x2, box_y2, outline="#ef4444", width=2, tags="char_guides")
             canvas.create_rectangle(box_x1 - 2, box_y1 - 2, box_x1 + 10, box_y1 + 10, fill="#ef4444", outline="#ffffff", width=1, tags="char_guides")
             canvas.create_rectangle(box_x2 - 10, box_y2 - 10, box_x2 + 2, box_y2 + 2, fill="#ef4444", outline="#ffffff", width=1, tags="char_guides")
-            canvas.create_text(box_x1 + (w // 2), box_y1 + (h // 2), text="👤 ชื่อตัวละคร", fill="#fca5a5", font=("Segoe UI", 9, "bold"), tags="char_guides")
+            canvas.create_text(box_x1 + (w // 2), box_y1 + (h // 2), text="👤 ชื่อตัวละคร", fill="#fca5a5", font=("Segoe UI", 10, "bold"), tags="char_guides")
             canvas.create_text(box_x1, max(40, box_y1 - 18), text=f"👤 กรอบชื่อตัวละคร: {w}x{h} px (ครอบชื่อเหนือหลอดเลือด HP/MP)",
-                               fill="#fca5a5", font=("Segoe UI", 9, "bold"), anchor="nw", tags="char_guides")
+                               fill="#fca5a5", font=("Segoe UI", 10, "bold"), anchor="nw", tags="char_guides")
 
         def get_hover_target(x, y):
             tol = 8
@@ -1257,20 +1257,20 @@ class TimerToolApp:
         ctrl_frame.place(relx=0.5, y=28, anchor="n")
 
         lbl_tip = tk.Label(ctrl_frame, text="🖱️ ลากกรอบสีแดงครอบ 'ชื่อตัวละคร' เหนือหลอดเลือด HP/MP",
-                           font=("Segoe UI", 9), fg="#94a3b8", bg="#0f172a", padx=10, pady=6)
+                           font=("Segoe UI", 11), fg="#94a3b8", bg="#0f172a", padx=10, pady=6)
         lbl_tip.pack(side=tk.LEFT)
 
-        btn_save = tk.Button(ctrl_frame, text="💾 บันทึกกรอบตัวละคร", font=("Segoe UI", 9, "bold"), fg="#ffffff", bg="#10b981",
+        btn_save = tk.Button(ctrl_frame, text="💾 บันทึกกรอบตัวละคร", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#10b981",
                              activebackground="#059669", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=12, pady=4,
                              command=save_and_close)
         btn_save.pack(side=tk.LEFT, padx=6, pady=4)
 
-        btn_reset = tk.Button(ctrl_frame, text="🔄 รีเซ็ต", font=("Segoe UI", 9), fg="#e2e8f0", bg="#334155",
+        btn_reset = tk.Button(ctrl_frame, text="🔄 รีเซ็ต", font=("Segoe UI", 11), fg="#e2e8f0", bg="#334155",
                               activebackground="#475569", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=8, pady=4,
                               command=reset_to_game)
         btn_reset.pack(side=tk.LEFT, padx=4, pady=4)
 
-        btn_cancel = tk.Button(ctrl_frame, text="❌ ยกเลิก (ESC)", font=("Segoe UI", 9), fg="#f87171", bg="#1e293b",
+        btn_cancel = tk.Button(ctrl_frame, text="❌ ยกเลิก (ESC)", font=("Segoe UI", 11), fg="#f87171", bg="#1e293b",
                                activebackground="#3d1b1b", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=8, pady=4,
                                command=cancel_crop)
         btn_cancel.pack(side=tk.LEFT, padx=(4, 8), pady=4)
@@ -2620,13 +2620,13 @@ class TimerToolApp:
                 self.f_safe_zone_banner.pack_forget()
 
             if getattr(self, 'f_boost_info_left', None) and not self.f_boost_info_left.winfo_ismapped():
-                if getattr(self, 'f_bot_action', None):
+                if getattr(self, 'f_bot_action', None) and self.f_bot_action.winfo_ismapped():
                     self.f_boost_info_left.pack(side=tk.TOP, fill=tk.X, padx=6, pady=(3, 1), before=self.f_bot_action)
                 else:
                     self.f_boost_info_left.pack(side=tk.TOP, fill=tk.X, padx=6, pady=(3, 1))
 
             if getattr(self, 'f_hot_farm', None) and not self.f_hot_farm.winfo_ismapped():
-                if getattr(self, 'f_cmd_box', None):
+                if getattr(self, 'f_cmd_box', None) and self.f_cmd_box.winfo_ismapped():
                     self.f_hot_farm.pack(side=tk.TOP, fill=tk.X, pady=(0, 2), before=self.f_cmd_box)
                 else:
                     self.f_hot_farm.pack(side=tk.TOP, fill=tk.X, pady=(0, 2))
@@ -2789,10 +2789,11 @@ class TimerToolApp:
                     self.pos_x = cfg.get("pos_x", 100)
                     self.pos_y = cfg.get("pos_y", 100)
                     # จำการปรับขนาดแยกตามโหมด (V.2 แนวนอน และ Vertical Sidebar)
-                    self.v2_w = max(245, cfg.get("v2_w", 460))
-                    self.v2_h = max(200, cfg.get("v2_h", 355))
+                    # กำหนด min_h ที่ปลอดภัย ป้องกันกรอบ OCR Terminal มุดตกขอบหน้าต่างเวลาเปิดโปรแกรม
+                    self.v2_w = max(245, cfg.get("v2_w", 491))
+                    self.v2_h = max(440, cfg.get("v2_h", 444))
                     self.sidebar_w = max(160, cfg.get("sidebar_w", 210))
-                    self.sidebar_h = max(520, cfg.get("sidebar_h", 535))
+                    self.sidebar_h = max(540, cfg.get("sidebar_h", 550))
                     # บังคับเปิดครั้งแรก/เปิดใหม่ ให้เป็นหน้าต่างหลักปกติ (V.2 แนวนอน) เสมอตามคำสั่งผู้ใช้
                     self.full_w = self.v2_w
                     self.full_h = self.v2_h
@@ -2833,13 +2834,13 @@ class TimerToolApp:
                     self.mini_h = max(64, cur_h)
                 else:
                     self.full_w = max(160, cur_w)
-                    self.full_h = max(200, cur_h)
+                    self.full_h = max(440 if cur_w > 240 else 540, cur_h)
                     if cur_w <= 240:
                         self.sidebar_w = cur_w
-                        self.sidebar_h = cur_h
+                        self.sidebar_h = self.full_h
                     else:
                         self.v2_w = cur_w
-                        self.v2_h = cur_h
+                        self.v2_h = self.full_h
         except Exception:
             pass
 
@@ -2848,10 +2849,10 @@ class TimerToolApp:
             "pos_y": self.pos_y,
             "full_w": self.full_w,
             "full_h": self.full_h,
-            "v2_w": getattr(self, 'v2_w', 460),
-            "v2_h": getattr(self, 'v2_h', 355),
+            "v2_w": getattr(self, 'v2_w', 491),
+            "v2_h": getattr(self, 'v2_h', 444),
             "sidebar_w": getattr(self, 'sidebar_w', 210),
-            "sidebar_h": getattr(self, 'sidebar_h', 535),
+            "sidebar_h": getattr(self, 'sidebar_h', 550),
             "mini_w": self.mini_w,
             "mini_h": self.mini_h,
             "custom_font_size": getattr(self, 'custom_font_size', 0),
@@ -2947,16 +2948,28 @@ class TimerToolApp:
     def do_resize(self, event):
         dx = event.x_root - self._resize_start_x
         dy = event.y_root - self._resize_start_y
-        
-        # 🔒 ฟิกลิมิตขั้นต่ำ ป้องกันการย่อจนตัวอักษรและปุ่มมุดหาย (รองรับ Vertical Sidebar แคบ 160px)
+
+        # 🚀 Throttle: คำนวณ new_w/h ก่อน แล้วเช็คว่าเปลี่ยนจากเดิม >=4px ก่อนค่อย apply
         if self.is_mini:
             new_w = max(460, self._start_w + dx)
             new_h = 64
+        else:
+            new_w = max(160, self._start_w + dx)
+            safe_min_h = 440 if new_w > 240 else 540
+            new_h = max(safe_min_h, self._start_h + dy)
+
+        # Throttle: skip ถ้าเปลี่ยนแค่ <4px ไม่ต้อง redraw ทุก pixel
+        last_w = getattr(self, '_last_resize_w', 0)
+        last_h = getattr(self, '_last_resize_h', 0)
+        if abs(new_w - last_w) < 4 and abs(new_h - last_h) < 4:
+            return
+        self._last_resize_w = new_w
+        self._last_resize_h = new_h
+
+        if self.is_mini:
             self.mini_w = new_w
             self.mini_h = new_h
         else:
-            new_w = max(160, self._start_w + dx)
-            new_h = max(200, self._start_h + dy)
             self.full_w = new_w
             self.full_h = new_h
             if new_w <= 240:
@@ -2965,7 +2978,7 @@ class TimerToolApp:
             else:
                 self.v2_w = new_w
                 self.v2_h = new_h
-            
+
         # 🛡️ ล็อกพิกัด +{pos_x}+{pos_y} ตลอดการย่อขยาย หน้าต่างไม่ดิ้นหนีเมาส์เด็ดขาด!
         geom = f"{new_w}x{new_h}+{self.pos_x}+{self.pos_y}"
         self.win_bg.geometry(geom)
@@ -2979,6 +2992,12 @@ class TimerToolApp:
         except:
             pass
         self.win_fg.lift()
+        # ยก Grip ขึ้นบนสุดเสมอหลัง lift
+        try:
+            if hasattr(self, 'grip_win') and self.grip_win.winfo_exists():
+                self.grip_win.lift()
+        except:
+            pass
 
     def end_resize(self, event):
         """บันทึกขนาดหน้าต่างเมื่อปล่อยเมาส์จากการลากมุม (ลื่นไหล 60-120fps ตามหลักสากล)"""
@@ -3129,12 +3148,12 @@ class TimerToolApp:
             f_sub_val = ("Consolas", sz_sub, "bold")
             if w <= 240:
                 unit_neso = " N"
-                sure_prefix = "[แน่นอน] "
+                sure_prefix = "[พื้นฐาน] "
                 extra_prefix = "[+1] "
                 rate_prefix = "📊 "
             else:
                 unit_neso = " NESO"
-                sure_prefix = "[ดรอปแน่นอน] "
+                sure_prefix = "[พื้นฐาน] "
                 extra_prefix = "[+1] "
                 rate_prefix = "📊 ดรอป:"
         elif w >= 450:
@@ -3143,7 +3162,7 @@ class TimerToolApp:
             f_sub_lbl = ("Segoe UI", 7)
             f_sub_val = ("Consolas", 7, "bold")
             unit_neso = " NESO"
-            sure_prefix = "[ดรอปแน่นอน] "
+            sure_prefix = "[พื้นฐาน] "
             extra_prefix = "[+1 ดรอป] "
             rate_prefix = "📊 อัตราดรอป:"
         elif w >= 390:
@@ -3152,7 +3171,7 @@ class TimerToolApp:
             f_sub_lbl = ("Segoe UI", 7)
             f_sub_val = ("Consolas", 7, "bold")
             unit_neso = " NESO"
-            sure_prefix = "[ดรอปแน่นอน] "
+            sure_prefix = "[พื้นฐาน] "
             extra_prefix = "[+1] "
             rate_prefix = "📊 ดรอป:"
         elif w <= 240: # แคบพิเศษแบบแถบข้าง Vertical HUD
@@ -3161,7 +3180,7 @@ class TimerToolApp:
             f_sub_lbl = ("Segoe UI", 6)
             f_sub_val = ("Consolas", 6, "bold")
             unit_neso = " N"
-            sure_prefix = "[แน่นอน] "
+            sure_prefix = "[พื้นฐาน] "
             extra_prefix = "[+1] "
             rate_prefix = "📊 "
         else: # แคบปานกลาง (< 390)
@@ -3170,7 +3189,7 @@ class TimerToolApp:
             f_sub_lbl = ("Segoe UI", 6)
             f_sub_val = ("Consolas", 6, "bold")
             unit_neso = " N"
-            sure_prefix = "[แน่นอน] "
+            sure_prefix = "[พื้นฐาน] "
             extra_prefix = "[+1] "
             rate_prefix = "📊 ดรอป:"
 
@@ -3178,22 +3197,14 @@ class TimerToolApp:
         content_w = max(100, w - 24)
 
         # -------------------------------------------------------------
-        # 🔴 ปรับขนาด Font กรอบสีแดงด้านบนตาม custom_font_size และความกว้างหน้าต่าง
+        # 🔴 ฟิกขนาด Font โซนเวลา, กระเป๋า และ เหรียญ Badges ให้คงที่ทั้งสองโหมด
+        #    (ไม่ปรับตาม custom_font_size หรือความกว้างหน้าต่าง ตามคำสั่งฟิกถาวร)
         # -------------------------------------------------------------
-        if c_fs and c_fs > 0:
-            timer_sz = max(10, c_fs + 2)
-            wal_sz = max(5, c_fs - 3)
-            badge_sz = max(5, c_fs - 3)
-        elif w <= 240:
-            timer_sz = 13
-            wal_sz = 6
-            badge_sz = 7
-        else:
-            timer_sz = 15
-            wal_sz = 7
-            badge_sz = 7
+        timer_sz = 17
+        wal_sz = 13
+        badge_sz = 13
 
-        if hasattr(self, 'lbl_timer_text') and self.lbl_timer_text.winfo_exists():
+        if getattr(self, 'lbl_timer_text', None) is not None and self.lbl_timer_text.winfo_exists():
             self.lbl_timer_text.config(font=("Consolas", timer_sz, "bold"))
         if hasattr(self, 'lbl_wallet_neso_val') and self.lbl_wallet_neso_val.winfo_exists():
             self.lbl_wallet_neso_val.config(font=("Consolas", wal_sz, "bold"))
@@ -3205,10 +3216,10 @@ class TimerToolApp:
             self.lbl_neso_badge_stock.config(font=("Consolas", badge_sz, "bold"))
 
         # -------------------------------------------------------------
-        # 🟢 หมวด 1: อัปเดต Font และข้อความ Label แถว 1 (⚡ คาดหวัง)
+        # 🟢 หมวด 1: อัปเดต Font และข้อความ Label แถว 1 (⚡Drop+BOOTs)
         # -------------------------------------------------------------
         if hasattr(self, 'lbl_exp_t') and self.lbl_exp_t.winfo_exists():
-            self.lbl_exp_t.config(font=f_main_lbl)
+            self.lbl_exp_t.config(text="⚡Drop+BOOTs", font=f_main_lbl)
         if hasattr(self, 'lbl_boost_expected') and self.lbl_boost_expected.winfo_exists():
             self.lbl_boost_expected.config(font=f_main_val, wraplength=content_w)
             if hasattr(self, 'neso_boost_total_min') and getattr(self, 'neso_boost_total_max', 0) > 0:
@@ -3249,11 +3260,29 @@ class TimerToolApp:
                     self.f_sure_part2.pack_configure(side=tk.TOP, anchor="w", pady=(1, 0))
                     if hasattr(self, 'lbl_sure_p') and self.lbl_sure_p.winfo_exists():
                         self.lbl_sure_p.config(text="+ ")
+                    # ✅ เมื่อฟอนต์ >= 11: แยก [+1 label] กับ [ค่า] ออกเป็น 2 บรรทัดใน f_sure_part2
+                    if c_fs and c_fs >= 11:
+                        if hasattr(self, 'lbl_extra_t') and self.lbl_extra_t.winfo_exists():
+                            self.lbl_extra_t.pack_configure(side=tk.TOP, anchor="w")
+                        if hasattr(self, 'lbl_boost_sure_rate') and self.lbl_boost_sure_rate.winfo_exists():
+                            self.lbl_boost_sure_rate.pack_configure(side=tk.TOP, anchor="w", padx=(4, 0))
+                            self.lbl_boost_sure_rate.config(wraplength=max(50, content_w - 10))
+                    else:
+                        if hasattr(self, 'lbl_extra_t') and self.lbl_extra_t.winfo_exists():
+                            self.lbl_extra_t.pack_configure(side=tk.LEFT, anchor="w")
+                        if hasattr(self, 'lbl_boost_sure_rate') and self.lbl_boost_sure_rate.winfo_exists():
+                            self.lbl_boost_sure_rate.pack_configure(side=tk.LEFT, anchor="w")
+                            self.lbl_boost_sure_rate.config(wraplength=max(50, content_w))
                 else:
                     self.f_sure_part1.pack_configure(side=tk.LEFT, anchor="w")
                     self.f_sure_part2.pack_configure(side=tk.LEFT, anchor="w", pady=(0, 0))
                     if hasattr(self, 'lbl_sure_p') and self.lbl_sure_p.winfo_exists():
                         self.lbl_sure_p.config(text=" + ")
+                    if hasattr(self, 'lbl_extra_t') and self.lbl_extra_t.winfo_exists():
+                        self.lbl_extra_t.pack_configure(side=tk.LEFT, anchor="w")
+                    if hasattr(self, 'lbl_boost_sure_rate') and self.lbl_boost_sure_rate.winfo_exists():
+                        self.lbl_boost_sure_rate.pack_configure(side=tk.LEFT, anchor="w")
+                        self.lbl_boost_sure_rate.config(wraplength=max(80, content_w))
 
         # -------------------------------------------------------------
         # 🟢 หมวด 2: อัปเดต Font Label แถว 3 (📊 อัตราดรอป)
@@ -4155,19 +4184,16 @@ class TimerToolApp:
             lbl_t_header.bind("<B1-Motion>", self.do_drag)
             lbl_t_header.bind("<ButtonRelease-1>", self.end_drag)
 
-            f_timer_box = tk.Frame(f_timer_zone, bg=self.trans_key, bd=0)
-            f_timer_box.pack(fill=tk.X, padx=3 if is_vert else 5, pady=(0, 1) if is_vert else (0, 2))
-            f_timer_box.bind("<ButtonPress-1>", self.start_drag)
-            f_timer_box.bind("<B1-Motion>", self.do_drag)
-            f_timer_box.bind("<ButtonRelease-1>", self.end_drag)
+            # 🕒 กล่องเวลาทรงวงแหวนกลม (Circular Countdown Ring - ยุคแรกแบบโมเดิร์น)
+            ring_h = 56 if is_vert else 60
+            self.canvas_timer_ring = tk.Canvas(f_timer_zone, bg=self.trans_key, height=ring_h, highlightthickness=0)
+            self.canvas_timer_ring.pack(fill=tk.X, padx=2 if is_vert else 4, pady=(0, 1))
+            self.canvas_timer_ring.bind("<ButtonPress-1>", self.start_drag)
+            self.canvas_timer_ring.bind("<B1-Motion>", self.do_drag)
+            self.canvas_timer_ring.bind("<ButtonRelease-1>", self.end_drag)
 
-            timer_f_sz = 13 if is_vert else 15
-            self.lbl_timer_text = StrokeLabel(f_timer_box, text="00:00", font=("Consolas", timer_f_sz, "bold"),
-                                              fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=2, anchor="center")
-            self.lbl_timer_text.pack(pady=0 if is_vert else 1)
-            self.lbl_timer_text.bind("<ButtonPress-1>", self.start_drag)
-            self.lbl_timer_text.bind("<B1-Motion>", self.do_drag)
-            self.lbl_timer_text.bind("<ButtonRelease-1>", self.end_drag)
+            # เก็บ compatibility alias เผื่อจุดอื่นอ้างอิง
+            self.lbl_timer_text = None
 
             # 🗺️ ปุ่มควบคุมแถวคู่: Scan Map และ Character OCR
             f_timer_btns = tk.Frame(f_timer_zone, bg=self.trans_key)
@@ -4200,7 +4226,7 @@ class TimerToolApp:
             f_wal_neso.pack(side=tk.LEFT, expand=True, fill=tk.BOTH, padx=(0, 1))
             f_wal_neso.bind("<Button-1>", lambda e: self.open_wallet_inapp_modal())
 
-            self.lbl_wallet_neso_val = tk.Label(f_wal_neso, text="...\nNESO", font=("Consolas", 6 if is_vert else 7, "bold"), fg="#c084fc", bg="#1a1c29", justify="center", padx=1 if is_vert else 2, pady=1 if is_vert else 2)
+            self.lbl_wallet_neso_val = tk.Label(f_wal_neso, text="...\nNESO", font=("Consolas", 13 if is_vert else 7, "bold"), fg="#c084fc", bg="#1a1c29", justify="center", padx=1 if is_vert else 2, pady=1 if is_vert else 2)
             self.lbl_wallet_neso_val.pack(anchor="center")
             self.lbl_wallet_neso_val.bind("<Button-1>", lambda e: self.open_wallet_inapp_modal())
 
@@ -4208,7 +4234,7 @@ class TimerToolApp:
             f_wal_nesolet = tk.Frame(f_wal_container, bg="#231433", bd=1, relief="solid")
             f_wal_nesolet.pack(side=tk.LEFT, expand=True, fill=tk.BOTH, padx=(1, 0))
 
-            self.lbl_nesolet = tk.Label(f_wal_nesolet, text="...\nNesolet", font=("Consolas", 6 if is_vert else 7, "bold"), fg="#d8b4fe", bg="#231433", justify="center", padx=1 if is_vert else 2, pady=1 if is_vert else 2)
+            self.lbl_nesolet = tk.Label(f_wal_nesolet, text="...\nNesolet", font=("Consolas", 13 if is_vert else 7, "bold"), fg="#d8b4fe", bg="#231433", justify="center", padx=1 if is_vert else 2, pady=1 if is_vert else 2)
             self.lbl_nesolet.pack(anchor="center")
 
             # 🪙 กล่องเหรียญ NESO 2 กล่องมาเรียงคู่กันใต้ตัวจับเวลา (ตามรูปกรอบสีน้ำตาลในแถบเขียวทึบ)
@@ -4216,7 +4242,7 @@ class TimerToolApp:
             f_timer_badges.pack(side=tk.TOP if is_vert else tk.BOTTOM, fill=tk.X, padx=1 if is_vert else 3, pady=(1, 1) if is_vert else (0, 3))
             f_timer_badges.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
-            coin_img = self.get_neso_coin_photo(size=18)
+            coin_img = self.get_neso_coin_photo(size=23)
 
             # กล่อง 1: Normal Pool Badge
             c_norm_badge = tk.Frame(f_timer_badges, bg="#081d3d", bd=1, relief="solid",
@@ -4235,7 +4261,7 @@ class TimerToolApp:
                 lbl_cn_icon.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
             _init_norm_stk = self.format_compact_number(getattr(self, 'neso_normal_stock_f', 0.0))
-            self.lbl_neso_badge_norm_stock = tk.Label(c_norm_badge, text=f"{_init_norm_stk}", font=("Consolas", 7, "bold"), fg="#bbf246", bg="#081d3d")
+            self.lbl_neso_badge_norm_stock = tk.Label(c_norm_badge, text=f"{_init_norm_stk}", font=("Consolas", 13, "bold"), fg="#bbf246", bg="#081d3d")
             self.lbl_neso_badge_norm_stock.pack(padx=2, pady=(0, 1))
             self.lbl_neso_badge_norm_stock.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
@@ -4256,7 +4282,7 @@ class TimerToolApp:
                 lbl_cb_icon.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
             _init_boost_stk = getattr(self, 'neso_boost_stock', '--')
-            self.lbl_neso_badge_stock = tk.Label(c_boost_badge, text=f"{_init_boost_stk}", font=("Consolas", 7, "bold"), fg="#bbf246", bg="#081d3d")
+            self.lbl_neso_badge_stock = tk.Label(c_boost_badge, text=f"{_init_boost_stk}", font=("Consolas", 13, "bold"), fg="#bbf246", bg="#081d3d")
             self.lbl_neso_badge_stock.pack(padx=2, pady=(0, 1))
             self.lbl_neso_badge_stock.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
@@ -4295,7 +4321,8 @@ class TimerToolApp:
             # ---------------------------------------------------------
             # 1. ชั้นบน: ข้อมูล Boost 4 แถว (โปร่งใส + StrokeLabel คมชัด สไตล์ Game HUD)
             # ---------------------------------------------------------
-            f_boost_info_left = tk.Frame(c_boost_bot, bg=self.trans_key, bd=0)
+            f_boost_info_left = tk.Frame(c_boost_bot, bg=self.trans_key, bd=1,
+                                          highlightbackground="#22c55e", highlightthickness=1)
             f_boost_info_left.pack(side=tk.TOP, fill=tk.X, padx=5, pady=(2, 2))
             f_boost_info_left.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.f_boost_info_left = f_boost_info_left
@@ -4328,13 +4355,13 @@ class TimerToolApp:
             self.lbl_sz_town.pack(pady=(0, 5))
             self.lbl_sz_town.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
-            # แถว 1: ⚡ คาดว่าจะได้รับ: X ~ Y NESO (รองรับแยก 2 บรรทัดเมื่อจอแคบหรือฟอนต์ใหญ่)
+            # แถว 1: ⚡Drop+BOOTs: X ~ Y NESO (รองรับแยก 2 บรรทัดเมื่อจอแคบหรือฟอนต์ใหญ่)
             f_row_exp = tk.Frame(f_boost_info_left, bg=self.trans_key)
             f_row_exp.pack(fill=tk.X, padx=3 if is_vert else 5, pady=(1 if is_vert else 2, 1), anchor="w")
             f_row_exp.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.f_row_exp = f_row_exp
 
-            exp_txt = "⚡ คาดหวัง:" if is_vert else "⚡ คาดว่าจะได้รับ:"
+            exp_txt = "⚡Drop+BOOTs"
             exp_font = ("Segoe UI", 7, "bold") if is_vert else ("Segoe UI", 9, "bold")
             lbl_exp_t = StrokeLabel(f_row_exp, text=exp_txt, font=exp_font,
                                     fg="#fbbf24", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
@@ -4354,13 +4381,21 @@ class TimerToolApp:
             f_row_sure.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.f_row_sure = f_row_sure
 
-            # ส่วนที่ 1: ดรอปแน่นอน
+            # ส่วนที่ 1: ดรอปพื้นฐาน (พร้อมไอคอนเหรียญ NESO)
             f_sure_part1 = tk.Frame(f_row_sure, bg=self.trans_key)
             f_sure_part1.pack(side=tk.TOP if is_vert else tk.LEFT, anchor="w")
             f_sure_part1.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.f_sure_part1 = f_sure_part1
 
-            sure_txt = "[แน่นอน] " if is_vert else "[ดรอปแน่นอน] "
+            coin_mini = self.get_neso_coin_photo(size=13 if is_vert else 15)
+            if coin_mini:
+                lbl_sure_ico = tk.Label(f_sure_part1, image=coin_mini, bg=self.trans_key)
+                lbl_sure_ico.image = coin_mini
+                lbl_sure_ico.pack(side=tk.LEFT, padx=(0, 2))
+                lbl_sure_ico.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
+                self.lbl_sure_ico = lbl_sure_ico
+
+            sure_txt = "[พื้นฐาน] "
             lbl_sure_t = StrokeLabel(f_sure_part1, text=sure_txt, font=exp_font,
                                      fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             lbl_sure_t.pack(side=tk.LEFT)
@@ -4454,7 +4489,7 @@ class TimerToolApp:
             f_stk_part2.pack(side=tk.TOP if is_vert else tk.LEFT, anchor="w", padx=(6 if is_vert else 0, 0))
             self.f_stk_part2 = f_stk_part2
 
-            lbl_chg_t = StrokeLabel(f_stk_part2, text=" | +", font=("Segoe UI", 6 if is_vert else 7),
+            lbl_chg_t = StrokeLabel(f_stk_part2, text="Per/Round =", font=("Segoe UI", 4 if is_vert else 7),
                                     fg="#64748b", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             lbl_chg_t.pack(side=tk.LEFT)
             lbl_chg_t.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
@@ -4470,11 +4505,12 @@ class TimerToolApp:
             # (pack ชิดขอบล่างของ c_boost_bot เสมอ ป้องกันการตกขอบหรือหลุดหาย)
             # ---------------------------------------------------------
             f_bot_action = tk.Frame(c_boost_bot, bg=self.trans_key)
-            f_bot_action.pack(side=tk.BOTTOM, fill=tk.X, padx=3 if is_vert else 5, pady=(1, 2))
+            f_bot_action.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True, padx=3 if is_vert else 5, pady=(1, 2))
             self.f_bot_action = f_bot_action
 
             # แถวบน: แถบแนะนำแมพในโซนที่ % สูงสุด (โปร่งใสตามคำสั่งผู้ใช้ + StrokeLabel คมชัด สไตล์ Game HUD)
-            f_hot_farm = tk.Frame(f_bot_action, bg=self.trans_key, bd=0)
+            f_hot_farm = tk.Frame(f_bot_action, bg=self.trans_key, bd=1,
+                                   highlightbackground="#eab308", highlightthickness=1)
             f_hot_farm.pack(side=tk.TOP, fill=tk.X, pady=(0, 2))
             self.f_hot_farm = f_hot_farm
 
@@ -4502,7 +4538,7 @@ class TimerToolApp:
             self.grip_pool.bind("<B1-Motion>", self.do_resize)
             self.grip_pool.bind("<ButtonRelease-1>", self.end_resize)
 
-            self.txt_cmd = StrokeLabel(f_cmd_box, text=">_ พร้อมทำงาน...", font=("Consolas", 6),
+            self.txt_cmd = StrokeLabel(f_cmd_box, text=">_ พร้อมทำงาน...", font=("Consolas", 8),
                                        fg="#38bdf8", bg="#08101a", stroke_color="#000000", stroke_width=1,
                                        anchor="nw", justify="left")
             self.txt_cmd.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=3, pady=2)
@@ -4528,15 +4564,24 @@ class TimerToolApp:
             f_fold_bar = tk.Frame(self.main_container, bg=self.trans_key)
             f_fold_bar.pack(side=tk.BOTTOM, fill=tk.X, padx=4 if is_vert else 6, pady=(0, 2))
 
-            # 🕹️ Grip ปรับขนาดมุมขวาล่างสุดของหน้าต่าง (กรอบสีแดงขาว ล่าง ขวา ตามคำสั่งผู้ใช้!)
-            self.grip_fold = tk.Label(f_fold_bar, text=" ◢ ", font=("Segoe UI", 8, "bold"),
+            # 🕹️ Grip ปรับขนาดมุมขวาล่างสุดของหน้าต่าง — place บน win_fg ตรึงมุมขวาล่างเสมอ
+            # ไม่โดน clip ตอนย่อหน้าต่าง เพราะไม่ได้อยู่ใน layout hierarchy
+            if hasattr(self, 'grip_win') and self.grip_win is not None:
+                try:
+                    self.grip_win.destroy()
+                except:
+                    pass
+            self.grip_win = tk.Label(self.win_fg, text=" ◢ ", font=("Segoe UI", 8, "bold"),
                                       fg="#ffffff", bg="#dc2626", relief="solid", bd=1,
                                       highlightbackground="#ffffff", highlightthickness=1,
                                       cursor="size_nw_se", padx=2, pady=0)
-            self.grip_fold.pack(side=tk.RIGHT, padx=1)
-            self.grip_fold.bind("<ButtonPress-1>", self.start_resize)
-            self.grip_fold.bind("<B1-Motion>", self.do_resize)
-            self.grip_fold.bind("<ButtonRelease-1>", self.end_resize)
+            self.grip_win.place(relx=1.0, rely=1.0, anchor="se")
+            self.grip_win.lift()
+            self.grip_win.bind("<ButtonPress-1>", self.start_resize)
+            self.grip_win.bind("<B1-Motion>", self.do_resize)
+            self.grip_win.bind("<ButtonRelease-1>", self.end_resize)
+            # เก็บ alias เดิมไว้ด้วยเพื่อ backward compat
+            self.grip_fold = self.grip_win
 
             if is_vert:
                 btn_fold_txt = "▲ แถบล่าง" if getattr(self, 'is_compact_folded', False) else "▼ พับล่าง"
@@ -4711,6 +4756,37 @@ class TimerToolApp:
         # หลอดเวลา
         self.canvas_timer.create_rectangle(0, 0, bar_w, h, fill="#38bdf8", outline="")
 
+    def redraw_circular_timer(self, remaining_seconds, total_seconds, countdown_str, theme_color):
+        """วาดนาฬิกาวงแหวนกลมนับถอยหลังแบบสมัยแรก พร้อมตัวเลขนับเวลาขนาดใหญ่ 17 bold ตรงกลาง"""
+        if not hasattr(self, 'canvas_timer_ring') or not self.canvas_timer_ring or not self.canvas_timer_ring.winfo_exists():
+            return
+        cw = self.canvas_timer_ring.winfo_width()
+        ch = self.canvas_timer_ring.winfo_height()
+        if cw <= 1 or ch <= 1:
+            cw = 100
+            ch = 58
+        self.canvas_timer_ring.delete("all")
+        cx = cw / 2
+        cy = ch / 2
+        # รัศมีวงกลมกระชับสวยงาม
+        r = max(20, min(25, int(min(cw, ch) * 0.42)))
+
+        # 1. วงแหวนรางพื้นหลัง (Dark Track Ring)
+        self.canvas_timer_ring.create_oval(cx - r, cy - r, cx + r, cy + r, outline="#1e293b", width=3)
+
+        # 2. วงแหวนหลอด Progress เดินตามเวลา (Progress Arc Ring)
+        fraction = (remaining_seconds / total_seconds) if total_seconds > 0 else 0
+        extent = fraction * 360
+        self.canvas_timer_ring.create_arc(cx - r, cy - r, cx + r, cy + r,
+                                          start=90, extent=extent,
+                                          outline=theme_color, width=3, style=tk.ARC)
+
+        # 3. ตัวเลขเวลานับถอยหลัง คมชัดขนาด 17 bold สว่างจ้าตรงกลางวงกลม (Shadow + Text)
+        self.canvas_timer_ring.create_text(cx + 1, cy + 1, text=countdown_str,
+                                           font=("Consolas", 17, "bold"), fill="#000000")
+        self.canvas_timer_ring.create_text(cx, cy, text=countdown_str,
+                                           font=("Consolas", 17, "bold"), fill=theme_color)
+
     def calculate_remaining(self):
         total_cycle = 20 * 60 # 1200 วินาที
         if self.mode == "ServerTime":
@@ -4851,6 +4927,10 @@ class TimerToolApp:
 
             if getattr(self, 'lbl_timer_text', None) is not None and self.lbl_timer_text.winfo_exists():
                 self.lbl_timer_text.config(text=countdown_str, fg=theme_color)
+
+            # อัปเดตนาฬิกาวงแหวนกลม พร้อมตัวเลข 17 bold ตรงกลาง
+            if getattr(self, 'canvas_timer_ring', None) is not None and self.canvas_timer_ring.winfo_exists():
+                self.redraw_circular_timer(remaining_seconds, total_seconds, countdown_str, theme_color)
 
             if getattr(self, 'canvas_timer_bar', None) is not None and self.canvas_timer_bar.winfo_exists():
                 self.canvas_timer_bar.delete("all")
