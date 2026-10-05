@@ -362,11 +362,17 @@ class TimerToolApp:
         self.trans_key = "#000001"
         self.bg_color = "#121418" # พื้นหลังคุมโทน MS แท้ๆ
         
-        # ขนาดเริ่มต้น Default V.2 หน้าต่างหลักแนวนอน (กดรูป ⏰ เพื่อสลับเป็น Vertical Sidebar)
-        self.full_w = 460
-        self.full_h = 355
+        # ขนาดเริ่มต้น Default V.2 หน้าต่างหลักแนวนอน และ Vertical Sidebar
+        self.v2_w = 460
+        self.v2_h = 355
+        self.sidebar_w = 170
+        self.sidebar_h = 380
+        self.full_w = 170
+        self.full_h = 380
         self.mini_w = 560
         self.mini_h = 72
+        self.custom_font_size = 0  # 0 = ค่ามาตรฐานตามระบบออโต้สเกล, หรือระบุขนาดเจาะจง (เช่น 7, 8, 9, 10)
+
         
         # State & Settings
         self.api_keys = get_api_keys()
@@ -1004,8 +1010,7 @@ class TimerToolApp:
 
     def log_cmd(self, msg):
         try:
-            t_str = datetime.now().strftime("%H:%M:%S")
-            line = f"[{t_str}] {msg}"
+            line = str(msg)
             self.cmd_logs.append(line)
             if len(self.cmd_logs) > 30:
                 self.cmd_logs.pop(0)
@@ -2778,11 +2783,16 @@ class TimerToolApp:
                     cfg = json.load(f)
                     self.pos_x = cfg.get("pos_x", 100)
                     self.pos_y = cfg.get("pos_y", 100)
-                    # จำการปรับขนาดล่าสุดไว้ในคอนฟิก (ถ้ามีในไฟล์คอนฟิกให้โหลดมาใช้ ถ้าไม่มีใช้ค่าเริ่มต้น)
-                    self.full_w = max(160, cfg.get("full_w", 170))
-                    self.full_h = max(200, cfg.get("full_h", 380))
+                    # จำการปรับขนาดแยกตามโหมด (V.2 แนวนอน และ Vertical Sidebar)
+                    self.v2_w = max(245, cfg.get("v2_w", 460))
+                    self.v2_h = max(200, cfg.get("v2_h", 355))
+                    self.sidebar_w = max(160, cfg.get("sidebar_w", 170))
+                    self.sidebar_h = max(200, cfg.get("sidebar_h", 380))
+                    self.full_w = max(160, cfg.get("full_w", self.sidebar_w))
+                    self.full_h = max(200, cfg.get("full_h", self.sidebar_h))
                     self.mini_w = max(460, cfg.get("mini_w", 560))
                     self.mini_h = max(64, cfg.get("mini_h", 72))
+                    self.custom_font_size = int(cfg.get("custom_font_size", 0))
                     self.opacity = cfg.get("opacity", 1.0)
                     self.sound_enabled = cfg.get("sound_enabled", True)
                     self.server_name = cfg.get("server_name", "Fang")
@@ -2817,8 +2827,13 @@ class TimerToolApp:
                     self.mini_h = max(64, cur_h)
                 else:
                     self.full_w = max(160, cur_w)
-                    if not getattr(self, 'is_compact_folded', False):
-                        self.full_h = max(200, cur_h)
+                    self.full_h = max(200, cur_h)
+                    if cur_w <= 240:
+                        self.sidebar_w = cur_w
+                        self.sidebar_h = cur_h
+                    else:
+                        self.v2_w = cur_w
+                        self.v2_h = cur_h
         except Exception:
             pass
 
@@ -2827,8 +2842,13 @@ class TimerToolApp:
             "pos_y": self.pos_y,
             "full_w": self.full_w,
             "full_h": self.full_h,
+            "v2_w": getattr(self, 'v2_w', 460),
+            "v2_h": getattr(self, 'v2_h', 355),
+            "sidebar_w": getattr(self, 'sidebar_w', 170),
+            "sidebar_h": getattr(self, 'sidebar_h', 380),
             "mini_w": self.mini_w,
             "mini_h": self.mini_h,
+            "custom_font_size": getattr(self, 'custom_font_size', 0),
             "opacity": self.opacity,
             "sound_enabled": self.sound_enabled,
             "mode": self.mode,
@@ -2868,7 +2888,7 @@ class TimerToolApp:
         if self.is_mini:
             h = self.mini_h
         elif getattr(self, 'is_compact_folded', False):
-            h = 380 if self.full_w <= 240 else 275
+            h = self.sidebar_h if self.full_w <= 240 else self.v2_h
         else:
             h = self.full_h
         geom = f"{w}x{h}+{self.pos_x}+{self.pos_y}"
@@ -2928,15 +2948,17 @@ class TimerToolApp:
             new_h = 64
             self.mini_w = new_w
             self.mini_h = new_h
-        elif getattr(self, 'is_compact_folded', False):
-            new_w = max(160, self._start_w + dx)
-            new_h = max(200, self._start_h + dy)
-            self.full_w = new_w
         else:
             new_w = max(160, self._start_w + dx)
             new_h = max(200, self._start_h + dy)
             self.full_w = new_w
             self.full_h = new_h
+            if new_w <= 240:
+                self.sidebar_w = new_w
+                self.sidebar_h = new_h
+            else:
+                self.v2_w = new_w
+                self.v2_h = new_h
             
         # 🛡️ ล็อกพิกัด +{pos_x}+{pos_y} ตลอดการย่อขยาย หน้าต่างไม่ดิ้นหนีเมาส์เด็ดขาด!
         geom = f"{new_w}x{new_h}+{self.pos_x}+{self.pos_y}"
@@ -3036,15 +3058,22 @@ class TimerToolApp:
         except Exception:
             pass
 
-        if getattr(self, 'full_w', 460) <= 240:
-            # อยู่โหมดแนวตั้ง (Sidebar 170px) -> สลับกลับเป็น V.2 แนวนอนเดิม (460x275)
-            self.full_w = 460
-            self.full_h = 355
+        cur_w = self.win_bg.winfo_width() if self.win_bg.winfo_width() > 100 else getattr(self, 'full_w', 170)
+        cur_h = self.win_bg.winfo_height() if self.win_bg.winfo_height() > 50 else getattr(self, 'full_h', 380)
+
+        if cur_w <= 240:
+            # อยู่โหมดแนวตั้ง (Sidebar) -> จำขนาด sidebar ล่าสุดไว้ แล้วสลับไป V.2 แนวนอน
+            self.sidebar_w = cur_w
+            self.sidebar_h = cur_h
+            self.full_w = getattr(self, 'v2_w', 460)
+            self.full_h = getattr(self, 'v2_h', 355)
             self.is_compact_folded = True
         else:
-            # อยู่โหมดแนวนอน V.2 -> สลับเป็น Vertical Sidebar (170x380)
-            self.full_w = 170
-            self.full_h = 380
+            # อยู่โหมดแนวนอน V.2 -> จำขนาด V.2 ล่าสุดไว้ แล้วสลับเป็น Vertical Sidebar
+            self.v2_w = cur_w
+            self.v2_h = cur_h
+            self.full_w = getattr(self, 'sidebar_w', 170)
+            self.full_h = getattr(self, 'sidebar_h', 380)
             self.is_compact_folded = True
 
         self.apply_geometry()
@@ -3082,8 +3111,27 @@ class TimerToolApp:
         if hasattr(self, 'lbl_map_sub') and self.lbl_map_sub.winfo_exists():
             self.lbl_map_sub.config(wraplength=max(80, w - 50))
 
-        # 2. ปรับขนาด Font และข้อความตามความกว้างหน้าต่าง
-        if w >= 450:
+        # 2. ปรับขนาด Font และข้อความตามความกว้างหน้าต่าง (พร้อมรองรับ custom_font_size จากหน้าต่างตั้งค่า)
+        c_fs = getattr(self, 'custom_font_size', 0)
+        if c_fs and c_fs > 0:
+            # ผู้ใช้ระบุขนาดตัวอักษรเอง (Custom Font Size)
+            sz_main = c_fs
+            sz_sub = max(5, c_fs - 1)
+            f_main_lbl = ("Segoe UI", sz_main, "bold")
+            f_main_val = ("Consolas", sz_main, "bold")
+            f_sub_lbl = ("Segoe UI", sz_sub)
+            f_sub_val = ("Consolas", sz_sub, "bold")
+            if w <= 240:
+                unit_neso = " N"
+                sure_prefix = "[แน่นอน] "
+                extra_prefix = "[+1] "
+                rate_prefix = "📊 "
+            else:
+                unit_neso = " NESO"
+                sure_prefix = "[ดรอปแน่นอน] "
+                extra_prefix = "[+1] "
+                rate_prefix = "📊 ดรอป:"
+        elif w >= 450:
             f_main_lbl = ("Segoe UI", 9, "bold")
             f_main_val = ("Consolas", 10, "bold")
             f_sub_lbl = ("Segoe UI", 7)
@@ -3120,19 +3168,22 @@ class TimerToolApp:
             extra_prefix = "[+1] "
             rate_prefix = "📊 ดรอป:"
 
-        # อัปเดต Font และข้อความ Label แถว 1
+        # คำนวณความกว้างสูงสุดสำหรับตัดบรรทัดแยกตามหมวด (Category-isolated auto-wrap)
+        content_w = max(110, w - 24)
+
+        # หมวด 1: อัปเดต Font และข้อความ Label แถว 1 (⚡ คาดหวัง)
         if hasattr(self, 'lbl_exp_t') and self.lbl_exp_t.winfo_exists():
             self.lbl_exp_t.config(font=f_main_lbl)
         if hasattr(self, 'lbl_boost_expected') and self.lbl_boost_expected.winfo_exists():
-            self.lbl_boost_expected.config(font=f_main_val)
+            self.lbl_boost_expected.config(font=f_main_val, wraplength=content_w)
             if hasattr(self, 'neso_boost_total_min') and getattr(self, 'neso_boost_total_max', 0) > 0:
                 self.lbl_boost_expected.config(text=f" {self.neso_boost_total_min:.2f} ~ {self.neso_boost_total_max:.2f}{unit_neso}")
 
-        # อัปเดต Font และข้อความ Label แถว 2
+        # หมวด 1: อัปเดต Font และข้อความ Label แถว 2 ([แน่นอน] + [+1])
         if hasattr(self, 'lbl_sure_t') and self.lbl_sure_t.winfo_exists():
             self.lbl_sure_t.config(text=sure_prefix, font=f_main_lbl)
         if hasattr(self, 'lbl_boost_sure_val') and self.lbl_boost_sure_val.winfo_exists():
-            self.lbl_boost_sure_val.config(font=f_main_val)
+            self.lbl_boost_sure_val.config(font=f_main_val, wraplength=content_w)
             if hasattr(self, 'neso_boost_sure_min') and getattr(self, 'neso_boost_sure_max', 0) > 0:
                 self.lbl_boost_sure_val.config(text=f"{self.neso_boost_sure_min:.2f} ~ {self.neso_boost_sure_max:.2f}{unit_neso}")
         if hasattr(self, 'lbl_sure_p') and self.lbl_sure_p.winfo_exists():
@@ -3140,13 +3191,14 @@ class TimerToolApp:
         if hasattr(self, 'lbl_extra_t') and self.lbl_extra_t.winfo_exists():
             self.lbl_extra_t.config(text=extra_prefix, font=f_main_lbl)
         if hasattr(self, 'lbl_boost_sure_rate') and self.lbl_boost_sure_rate.winfo_exists():
-            self.lbl_boost_sure_rate.config(font=f_main_val)
+            self.lbl_boost_sure_rate.config(font=f_main_val, wraplength=content_w)
 
-        # 🔄 Dynamic Line-Wrap สำหรับแถว 2 เมื่อหน้าต่างถูกบีบแคบ (< 445px)
+        # 🔄 Dynamic Line-Wrap สำหรับแถว 2 เมื่อหน้าต่างถูกบีบแคบ หรือเมื่อฟอนต์ถูกขยายใหญ่จนล้น
+        font_threshold = 445 if (not c_fs or c_fs <= 8) else 520
         if hasattr(self, 'f_sure_part1') and hasattr(self, 'f_sure_part2'):
             if self.f_sure_part1.winfo_exists() and self.f_sure_part2.winfo_exists():
-                if w < 445:
-                    # แคบโดนบีบ: ตัดส่วน [+1 ดรอป] ลงมาเป็นบรรทัดใหม่ทันที ไม่ตกขอบ 100%!
+                if w < font_threshold or (c_fs and c_fs >= 10):
+                    # แคบโดนบีบ หรือตัวอักษรใหญ่: ตัดส่วน [+1 ดรอป] ลงมาเป็นบรรทัดใหม่ทันที ไม่ตกขอบ 100%!
                     self.f_sure_part1.pack_configure(side=tk.TOP, anchor="w")
                     self.f_sure_part2.pack_configure(side=tk.TOP, anchor="w", pady=(1, 0))
                     if hasattr(self, 'lbl_sure_p') and self.lbl_sure_p.winfo_exists():
@@ -3158,14 +3210,15 @@ class TimerToolApp:
                     if hasattr(self, 'lbl_sure_p') and self.lbl_sure_p.winfo_exists():
                         self.lbl_sure_p.config(text=" + ")
 
-        # อัปเดต Font Label แถว 3 & 4
+        # หมวด 2: อัปเดต Font Label แถว 3 (📊 อัตราดรอป) ตัดบรรทัดในหมวดของตัวเอง
         if hasattr(self, 'lbl_rate_t') and self.lbl_rate_t.winfo_exists():
             self.lbl_rate_t.config(text=rate_prefix, font=f_sub_lbl)
         if hasattr(self, 'lbl_boost_rate_total') and self.lbl_boost_rate_total.winfo_exists():
             self.lbl_boost_rate_total.config(font=f_sub_val)
         if hasattr(self, 'lbl_boost_rate_breakdown') and self.lbl_boost_rate_breakdown.winfo_exists():
-            self.lbl_boost_rate_breakdown.config(font=f_sub_val)
+            self.lbl_boost_rate_breakdown.config(font=f_sub_val, wraplength=content_w)
 
+        # แถว 4: ข้อมูล Stock / Charge
         if hasattr(self, 'lbl_stk_t') and self.lbl_stk_t.winfo_exists():
             self.lbl_stk_t.config(font=f_sub_lbl)
         if hasattr(self, 'lbl_neso_boost_stock') and self.lbl_neso_boost_stock.winfo_exists():
@@ -3611,7 +3664,7 @@ class TimerToolApp:
             
         self.settings_win = tk.Toplevel(self.root)
         self.settings_win.title("TIMER TOOL Settings")
-        self.settings_win.geometry(f"290x360+{set_x}+{set_y}")
+        self.settings_win.geometry(f"290x420+{set_x}+{set_y}")
         self.settings_win.config(bg="#121721", highlightbackground="#00f2fe", highlightthickness=1)
         self.settings_win.attributes("-topmost", True)
         self.settings_win.overrideredirect(True)
@@ -3680,16 +3733,57 @@ class TimerToolApp:
 
         # 3. ปุ่มเลือกขนาดหน้าต่างสำเร็จรูป (S / M / L)
         f_sz = tk.Frame(self.settings_win, bg="#121721")
-        f_sz.pack(fill=tk.X, padx=10, pady=3)
+        f_sz.pack(fill=tk.X, padx=10, pady=2)
         tk.Label(f_sz, text="ขนาดหน้าต่าง (Window Size):", font=("Segoe UI", 8, "bold"), fg="#94a3b8", bg="#121721").pack(anchor="w")
         sz_box = tk.Frame(f_sz, bg="#121721")
-        sz_box.pack(fill=tk.X, pady=2)
+        sz_box.pack(fill=tk.X, pady=1)
         
         sizes = [("📱 แถบซ้าย", 170, 380), ("S เล็ก", 245, 385), ("M กลาง", 265, 410), ("L ใหญ่", 460, 355)]
         for label, sw, sh in sizes:
             btn_sz = tk.Label(sz_box, text=label, font=("Segoe UI", 7, "bold"), bg="#1e293b", fg="#e2e8f0", cursor="hand2", padx=6, pady=2)
             btn_sz.pack(side=tk.LEFT, padx=2)
             btn_sz.bind("<Button-1>", lambda e, w=sw, h=sh: [setattr(self, 'is_compact_folded', (w <= 240)), self.set_preset_size(w, h)])
+
+        # 🔤 3.1 ปรับขนาดตัวอักษรเองตามใจผู้ใช้ (Font Size Scaling) - ครอบคลุมทั้งโหมด 1 และ 2
+        f_font = tk.Frame(self.settings_win, bg="#121721")
+        f_font.pack(fill=tk.X, padx=10, pady=2)
+        tk.Label(f_font, text="ขนาดตัวอักษรข้อความ (Font Size):", font=("Segoe UI", 8, "bold"), fg="#94a3b8", bg="#121721").pack(anchor="w")
+        f_font_box = tk.Frame(f_font, bg="#121721")
+        f_font_box.pack(fill=tk.X, pady=1)
+
+        def set_font_size_val(sz):
+            self.custom_font_size = int(sz)
+            self.save_config()
+            self.update_auto_scale_ui()
+            self.refresh_settings_ui()
+
+        # ปุ่มลัด: ออโต้, 7, 8, 9, 10, 11
+        f_presets = [("ออโต้", 0), ("7", 7), ("8", 8), ("9", 9), ("10", 10), ("11", 11)]
+        for f_label, f_val in f_presets:
+            is_active = (getattr(self, 'custom_font_size', 0) == f_val)
+            bg_f = "#00f2fe" if is_active else "#1e293b"
+            fg_f = "#000000" if is_active else "#e2e8f0"
+            btn_f = tk.Label(f_font_box, text=f_label, font=("Segoe UI", 7, "bold"), bg=bg_f, fg=fg_f, cursor="hand2", padx=5, pady=1)
+            btn_f.pack(side=tk.LEFT, padx=1)
+            btn_f.bind("<Button-1>", lambda e, v=f_val: set_font_size_val(v))
+
+        # ช่องกรอกตัวเลขขนาดตามใจผู้ใช้
+        ent_fs = tk.Entry(f_font_box, width=3, font=("Consolas", 8, "bold"), bg="#1e293b", fg="#ffffff", insertbackground="#00f2fe", bd=1, relief="solid", justify="center")
+        ent_fs.pack(side=tk.LEFT, padx=(4, 2))
+        cur_fs = getattr(self, 'custom_font_size', 0)
+        if cur_fs > 0:
+            ent_fs.insert(0, str(cur_fs))
+
+        def apply_custom_font_entry():
+            val = ent_fs.get().strip()
+            if val.isdigit() and int(val) > 0:
+                set_font_size_val(int(val))
+            elif val == "0" or val == "":
+                set_font_size_val(0)
+
+        btn_apply_fs = tk.Label(f_font_box, text="ตั้ง", font=("Segoe UI", 7, "bold"), bg="#38ef7d", fg="#000000", cursor="hand2", padx=4, pady=1)
+        btn_apply_fs.pack(side=tk.LEFT, padx=1)
+        btn_apply_fs.bind("<Button-1>", lambda e: apply_custom_font_entry())
 
         # 4. ตัวเลือกโหมด: ServerTime หรือ Manual
         f_mode = tk.Frame(self.settings_win, bg="#121721")
@@ -4292,9 +4386,10 @@ class TimerToolApp:
                                             fg="#4ade80", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="e")
             self.lbl_hot_rate.pack(side=tk.RIGHT, padx=2, pady=1)
 
-            # Mini CMD Terminal Box แสดงการตรวจจับ OCR / ระบบ Real-time (โปร่งใสตามคำสั่งผู้ใช้ + StrokeLabel)
-            f_cmd_box = tk.Frame(f_bot_action, bg=self.trans_key, bd=0)
-            f_cmd_box.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+            # Mini CMD Terminal Box แสดงการตรวจจับ OCR / ระบบ Real-time (กรอบเส้นหน้าต่างตามสั่ง + StrokeLabel)
+            f_cmd_box = tk.Frame(f_bot_action, bg="#08101a", bd=1, relief="solid",
+                                 highlightbackground="#1e293b", highlightthickness=1)
+            f_cmd_box.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=(1, 0))
             self.f_cmd_box = f_cmd_box
 
             # Grip ปรับขนาดมุมขวาล่างของกรอบ Pool (กรอบสีแดงขาว ล่าง ขวา ตามคำสั่งผู้ใช้!)
@@ -4307,10 +4402,10 @@ class TimerToolApp:
             self.grip_pool.bind("<B1-Motion>", self.do_resize)
             self.grip_pool.bind("<ButtonRelease-1>", self.end_resize)
 
-            self.txt_cmd = StrokeLabel(f_cmd_box, text=">_ พร้อมทำงาน...", font=("Consolas", 7),
-                                       fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=1,
-                                       anchor="w", justify="left")
-            self.txt_cmd.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=2, pady=1)
+            self.txt_cmd = StrokeLabel(f_cmd_box, text=">_ พร้อมทำงาน...", font=("Consolas", 6),
+                                       fg="#38bdf8", bg="#08101a", stroke_color="#000000", stroke_width=1,
+                                       anchor="nw", justify="left")
+            self.txt_cmd.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=3, pady=2)
             self.txt_cmd.bind("<Button-1>", lambda e: self.trigger_scan_and_refresh())
 
             def _on_cmd_resize(e=None):
