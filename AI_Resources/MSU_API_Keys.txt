@@ -1,0 +1,15 @@
+[MSU_OPENAPI_KEYS]
+# MapleStory Universe / Nexon OpenAPI Test Keys (Pool 5 Keys for Round-Robin)
+# Rate limit per key: 2 RPS, 3,000 requests/day
+# Total pool capacity: 15,000 requests/day
+
+KEY_1=gw_9300321ad25e8c9ee671b39b683681ed21befc8ff886fa982f049992417ee03a8f7f24b7a7dfcd789945c74bfff26452
+KEY_2=gw_91a3dc4dfa157a8971e67fb7e38d3add0fdd3f4dfc0caf21ac82fc29c650efee85c7920c8a113a09b7a4a670ba466fe9
+KEY_3=gw_2e28c1275962983782c1996afe9777f0fd2c232d9f49b880bc2ac9193d307ae0607cc6c5611568cfb5f157cfe90d93be
+KEY_4=gw_601054c06febe64bb1aac6bbd360599c8273827a81cf67479de827062c0824f3245b153d891624503b969e8187af721a
+KEY_5=gw_a7485d00ca42c9d6b744293e656529288967509c8f932770c78700462f7dd964c0e8c1af10219bf6d920ecbabe5b6a39
+
+[API_INFO]
+BASE_URL=https://openapi.msu.io/v1rc1
+HEADER_NAME=x-nxopen-api-key
+DOCS_URL=https://docs.msu.io/msu-open-api/ai-assistant/msu-openapi-builder-guide.md

@@ -1,0 +1,6 @@
+--- Binance API Test ---
+API Key:
+OUApv4KlhLg9de0FrU2UWaK25JDO9GWqTSlw5w5hG9czNnI69rbkcYOGb6e3FkfI
+
+Secret Key:
+6FyPpcSOjtX0mPDt3oBJJrJOmpAqu7jM5nPzV4A1rMpVKYvQZNgiePvLyJutTSdg

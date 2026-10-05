@@ -1,0 +1,8 @@
+[PRIMARY_EVM_WALLET]
+ADDRESS=0x69ca1eA12Be04DAFD27FB9164CB802878e846d16
+TYPE=Primary EVM Wallet (กระเป๋าหลักของลูกพี่ ใช้ได้ทุกเชน EVM)
+SUPPORTED_CHAINS=Henesys L1 (MSU N), Ethereum, BSC, Arbitrum, Avalanche, Polygon, Base, etc.
+
+[MSU_LINKS]
+EXPLORER=https://msu-explorer.xangle.io/address/0x69ca1eA12Be04DAFD27FB9164CB802878e846d16
+NAVIGATOR=https://msu.io/navigator

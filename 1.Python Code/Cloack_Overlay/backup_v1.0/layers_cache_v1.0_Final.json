@@ -1,0 +1,513 @@
+[
+  {
+    "layerId": 102001,
+    "layerName": "Prepare for Adventure",
+    "groupName": "Lv. 10 ~ 29",
+    "minLevel": 10,
+    "maxLevel": 19
+  },
+  {
+    "layerId": 103001,
+    "layerName": "The Adventure Begins",
+    "groupName": "Lv. 10 ~ 29",
+    "minLevel": 20,
+    "maxLevel": 29
+  },
+  {
+    "layerId": 104003,
+    "layerName": "Edelstein",
+    "groupName": "Lv. 30 ~ 59",
+    "minLevel": 30,
+    "maxLevel": 39
+  },
+  {
+    "layerId": 104001,
+    "layerName": "Gold Beach",
+    "groupName": "Lv. 30 ~ 59",
+    "minLevel": 30,
+    "maxLevel": 59
+  },
+  {
+    "layerId": 104002,
+    "layerName": "Riena Strait",
+    "groupName": "Lv. 30 ~ 59",
+    "minLevel": 30,
+    "maxLevel": 59
+  },
+  {
+    "layerId": 104004,
+    "layerName": "Elodin",
+    "groupName": "Lv. 30 ~ 59",
+    "minLevel": 30,
+    "maxLevel": 59
+  },
+  {
+    "layerId": 104005,
+    "layerName": "Ellinel",
+    "groupName": "Lv. 30 ~ 59",
+    "minLevel": 30,
+    "maxLevel": 59
+  },
+  {
+    "layerId": 105001,
+    "layerName": "Kerning City",
+    "groupName": "Lv. 40 ~ 49",
+    "minLevel": 40,
+    "maxLevel": 49
+  },
+  {
+    "layerId": 106001,
+    "layerName": "Perion",
+    "groupName": "Lv. 50 ~ 69",
+    "minLevel": 50,
+    "maxLevel": 69
+  },
+  {
+    "layerId": 107001,
+    "layerName": "Mushroom Castle",
+    "groupName": "Lv. 60 ~ 79",
+    "minLevel": 60,
+    "maxLevel": 69
+  },
+  {
+    "layerId": 107002,
+    "layerName": "Sleepywood",
+    "groupName": "Lv. 60 ~ 79",
+    "minLevel": 60,
+    "maxLevel": 79
+  },
+  {
+    "layerId": 108001,
+    "layerName": "Aqua Road",
+    "groupName": "Lv. 70 ~ 89",
+    "minLevel": 70,
+    "maxLevel": 89
+  },
+  {
+    "layerId": 108002,
+    "layerName": "Sky Road",
+    "groupName": "Lv. 70 ~ 89",
+    "minLevel": 70,
+    "maxLevel": 89
+  },
+  {
+    "layerId": 108003,
+    "layerName": "El Nath Mountains",
+    "groupName": "Lv. 70 ~ 89",
+    "minLevel": 70,
+    "maxLevel": 89
+  },
+  {
+    "layerId": 109002,
+    "layerName": "Verne Mine",
+    "groupName": "Lv. 80 ~ 99",
+    "minLevel": 80,
+    "maxLevel": 89
+  },
+  {
+    "layerId": 109001,
+    "layerName": "Nihal Desert",
+    "groupName": "Lv. 80 ~ 99",
+    "minLevel": 80,
+    "maxLevel": 99
+  },
+  {
+    "layerId": 110001,
+    "layerName": "Magatia",
+    "groupName": "Lv. 90 ~ 119",
+    "minLevel": 90,
+    "maxLevel": 99
+  },
+  {
+    "layerId": 110003,
+    "layerName": "Ellin Forest",
+    "groupName": "Lv. 90 ~ 119",
+    "minLevel": 90,
+    "maxLevel": 109
+  },
+  {
+    "layerId": 110004,
+    "layerName": "Heliseum",
+    "groupName": "Lv. 90 ~ 119",
+    "minLevel": 90,
+    "maxLevel": 109
+  },
+  {
+    "layerId": 110002,
+    "layerName": "Ludibrium",
+    "groupName": "Lv. 90 ~ 119",
+    "minLevel": 90,
+    "maxLevel": 119
+  },
+  {
+    "layerId": 111001,
+    "layerName": "Minar Forest",
+    "groupName": "Lv. 100 ~ 119",
+    "minLevel": 100,
+    "maxLevel": 119
+  },
+  {
+    "layerId": 111002,
+    "layerName": "Aqua Road Deep Sea",
+    "groupName": "Lv. 100 ~ 119",
+    "minLevel": 100,
+    "maxLevel": 119
+  },
+  {
+    "layerId": 111003,
+    "layerName": "Heliseum Tyrant's Territory",
+    "groupName": "Lv. 100 ~ 119",
+    "minLevel": 100,
+    "maxLevel": 119
+  },
+  {
+    "layerId": 112001,
+    "layerName": "Clocktower Bottom Floor",
+    "groupName": "Lv. 110 ~ 139",
+    "minLevel": 110,
+    "maxLevel": 129
+  },
+  {
+    "layerId": 112002,
+    "layerName": "Lion King's Castle",
+    "groupName": "Lv. 110 ~ 139",
+    "minLevel": 110,
+    "maxLevel": 139
+  },
+  {
+    "layerId": 113002,
+    "layerName": "Fantasy Theme World",
+    "groupName": "Lv. 120 ~ 159",
+    "minLevel": 120,
+    "maxLevel": 129
+  },
+  {
+    "layerId": 113001,
+    "layerName": "Minar Forest Dragon Forest",
+    "groupName": "Lv. 120 ~ 159",
+    "minLevel": 120,
+    "maxLevel": 159
+  },
+  {
+    "layerId": 114002,
+    "layerName": "Korean Folk Town",
+    "groupName": "Lv. 130 ~ 149",
+    "minLevel": 130,
+    "maxLevel": 139
+  },
+  {
+    "layerId": 114003,
+    "layerName": "Dead Mine",
+    "groupName": "Lv. 130 ~ 149",
+    "minLevel": 130,
+    "maxLevel": 139
+  },
+  {
+    "layerId": 114004,
+    "layerName": "Golden Temple",
+    "groupName": "Lv. 130 ~ 149",
+    "minLevel": 130,
+    "maxLevel": 139
+  },
+  {
+    "layerId": 114005,
+    "layerName": "Crimsonheart Castle",
+    "groupName": "Lv. 130 ~ 149",
+    "minLevel": 130,
+    "maxLevel": 139
+  },
+  {
+    "layerId": 114006,
+    "layerName": "Partem",
+    "groupName": "Lv. 130 ~ 149",
+    "minLevel": 130,
+    "maxLevel": 139
+  },
+  {
+    "layerId": 114001,
+    "layerName": "Mu Lung Garden",
+    "groupName": "Lv. 130 ~ 149",
+    "minLevel": 130,
+    "maxLevel": 149
+  },
+  {
+    "layerId": 115001,
+    "layerName": "Temple of Time",
+    "groupName": "Lv. 140 ~ 169",
+    "minLevel": 140,
+    "maxLevel": 169
+  },
+  {
+    "layerId": 115002,
+    "layerName": "Kerning Tower",
+    "groupName": "Lv. 140 ~ 169",
+    "minLevel": 140,
+    "maxLevel": 169
+  },
+  {
+    "layerId": 116001,
+    "layerName": "Stone Colossus",
+    "groupName": "Lv. 150 ~ 169",
+    "minLevel": 150,
+    "maxLevel": 169
+  },
+  {
+    "layerId": 117001,
+    "layerName": "Gate to the Future",
+    "groupName": "Lv. 160 ~ 189",
+    "minLevel": 160,
+    "maxLevel": 189
+  },
+  {
+    "layerId": 117002,
+    "layerName": "Omega Sector",
+    "groupName": "Lv. 160 ~ 189",
+    "minLevel": 160,
+    "maxLevel": 189
+  },
+  {
+    "layerId": 118001,
+    "layerName": "Kritias",
+    "groupName": "Lv. 170 ~ 189",
+    "minLevel": 170,
+    "maxLevel": 189
+  },
+  {
+    "layerId": 120001,
+    "layerName": "Twilight Perion",
+    "groupName": "Lv. 190 ~ 199",
+    "minLevel": 190,
+    "maxLevel": 194
+  },
+  {
+    "layerId": 120002,
+    "layerName": "Twilight Perion Excavation Area",
+    "groupName": "Lv. 190 ~ 199",
+    "minLevel": 195,
+    "maxLevel": 199
+  },
+  {
+    "layerId": 120003,
+    "layerName": "Fox Valley",
+    "groupName": "Lv. 190 ~ 199",
+    "minLevel": 195,
+    "maxLevel": 199
+  },
+  {
+    "layerId": 130001,
+    "layerName": "Lake of Oblivion",
+    "groupName": "Arc. 30 ~ 100",
+    "minLevel": 200,
+    "maxLevel": 209
+  },
+  {
+    "layerId": 121001,
+    "layerName": "Scrapyard",
+    "groupName": "Lv. 200 ~ 219",
+    "minLevel": 200,
+    "maxLevel": 210
+  },
+  {
+    "layerId": 130002,
+    "layerName": "Extinction Zone",
+    "groupName": "Arc. 30 ~ 100",
+    "minLevel": 204,
+    "maxLevel": 209
+  },
+  {
+    "layerId": 130004,
+    "layerName": "Underground",
+    "groupName": "Arc. 30 ~ 100",
+    "minLevel": 205,
+    "maxLevel": 210
+  },
+  {
+    "layerId": 130003,
+    "layerName": "Cave of Repose",
+    "groupName": "Arc. 30 ~ 100",
+    "minLevel": 207,
+    "maxLevel": 209
+  },
+  {
+    "layerId": 130005,
+    "layerName": "Surface",
+    "groupName": "Arc. 30 ~ 100",
+    "minLevel": 207,
+    "maxLevel": 213
+  },
+  {
+    "layerId": 122001,
+    "layerName": "Dark World Tree Bottom",
+    "groupName": "Lv. 210 ~ 219",
+    "minLevel": 210,
+    "maxLevel": 211
+  },
+  {
+    "layerId": 131001,
+    "layerName": "Five-Color Hill",
+    "groupName": "Arc. 100 ~ 190",
+    "minLevel": 210,
+    "maxLevel": 213
+  },
+  {
+    "layerId": 122002,
+    "layerName": "Dark World Tree Mid Bottom",
+    "groupName": "Lv. 210 ~ 219",
+    "minLevel": 212,
+    "maxLevel": 213
+  },
+  {
+    "layerId": 121002,
+    "layerName": "Scrapyard Skyline",
+    "groupName": "Lv. 200 ~ 219",
+    "minLevel": 212,
+    "maxLevel": 215
+  },
+  {
+    "layerId": 122003,
+    "layerName": "Dark World Tree Mid Top",
+    "groupName": "Lv. 210 ~ 219",
+    "minLevel": 214,
+    "maxLevel": 215
+  },
+  {
+    "layerId": 131002,
+    "layerName": "Eree Valley",
+    "groupName": "Arc. 100 ~ 190",
+    "minLevel": 214,
+    "maxLevel": 216
+  },
+  {
+    "layerId": 131004,
+    "layerName": "Mushbud Forest",
+    "groupName": "Arc. 100 ~ 190",
+    "minLevel": 215,
+    "maxLevel": 220
+  },
+  {
+    "layerId": 122005,
+    "layerName": "Scrapyard, Black Heaven Inside 1",
+    "groupName": "Lv. 200 ~ 219",
+    "minLevel": 216,
+    "maxLevel": 217
+  },
+  {
+    "layerId": 122004,
+    "layerName": "Dark World Tree Top",
+    "groupName": "Lv. 210 ~ 219",
+    "minLevel": 216,
+    "maxLevel": 219
+  },
+  {
+    "layerId": 131003,
+    "layerName": "Skywhale Mountain",
+    "groupName": "Arc. 100 ~ 190",
+    "minLevel": 217,
+    "maxLevel": 219
+  },
+  {
+    "layerId": 131005,
+    "layerName": "Illiard Fungos",
+    "groupName": "Arc. 100 ~ 190",
+    "minLevel": 217,
+    "maxLevel": 220
+  },
+  {
+    "layerId": 122006,
+    "layerName": "Scrapyard, Black Heaven Inside 2",
+    "groupName": "Lv. 200 ~ 219",
+    "minLevel": 218,
+    "maxLevel": 219
+  },
+  {
+    "layerId": 122007,
+    "layerName": "Scrapyard, Black Heaven Inside 3",
+    "groupName": "Lv. 200 ~ 219",
+    "minLevel": 219,
+    "maxLevel": 219
+  },
+  {
+    "layerId": 132001,
+    "layerName": "Lachelein Alley",
+    "groupName": "Arc. 190 ~ 240",
+    "minLevel": 220,
+    "maxLevel": 221
+  },
+  {
+    "layerId": 132002,
+    "layerName": "Lachelein Street",
+    "groupName": "Arc. 190 ~ 240",
+    "minLevel": 222,
+    "maxLevel": 225
+  },
+  {
+    "layerId": 132003,
+    "layerName": "Lachelein Clocktower",
+    "groupName": "Arc. 190 ~ 240",
+    "minLevel": 226,
+    "maxLevel": 228
+  },
+  {
+    "layerId": 133001,
+    "layerName": "Near the Floral Flute",
+    "groupName": "Arc. 280 ~ 360",
+    "minLevel": 230,
+    "maxLevel": 232
+  },
+  {
+    "layerId": 133002,
+    "layerName": "Heart of the Forest",
+    "groupName": "Arc. 280 ~ 360",
+    "minLevel": 233,
+    "maxLevel": 236
+  },
+  {
+    "layerId": 134001,
+    "layerName": "Path to the Coral Forest",
+    "groupName": "Arc. 400 ~ 520",
+    "minLevel": 236,
+    "maxLevel": 236
+  },
+  {
+    "layerId": 134002,
+    "layerName": "Trueffet Street",
+    "groupName": "Arc. 400 ~ 520",
+    "minLevel": 237,
+    "maxLevel": 238
+  },
+  {
+    "layerId": 133003,
+    "layerName": "Cavernous Cavern",
+    "groupName": "Arc. 280 ~ 360",
+    "minLevel": 237,
+    "maxLevel": 240
+  },
+  {
+    "layerId": 134003,
+    "layerName": "Research Lab",
+    "groupName": "Arc. 400 ~ 520",
+    "minLevel": 239,
+    "maxLevel": 241
+  },
+  {
+    "layerId": 134004,
+    "layerName": "That Day in Trueffet",
+    "groupName": "Arc. 400 ~ 520",
+    "minLevel": 242,
+    "maxLevel": 245
+  },
+  {
+    "layerId": 135003,
+    "layerName": "Radiant Temple",
+    "groupName": "Arc. 560 ~ 640",
+    "minLevel": 248,
+    "maxLevel": 249
+  },
+  {
+    "layerId": 136003,
+    "layerName": "Star-Swallowing Sea",
+    "groupName": "Arc. 600 ~ 670",
+    "minLevel": 250,
+    "maxLevel": 251
+  }
+]
