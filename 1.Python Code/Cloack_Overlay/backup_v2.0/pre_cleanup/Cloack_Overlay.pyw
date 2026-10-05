@@ -6,10 +6,18 @@ import sys
 import json
 import time
 import math
+import webbrowser
 import threading
+import urllib.request
 from datetime import datetime
+import difflib
+import asyncio
 import re
+
+from PIL import Image, ImageTk
+import mss
 import win32gui
+import winocr
 
 try:
     import winsound
@@ -684,7 +692,7 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
             self.win_bg.update_idletasks()
             self.win_fg.update_idletasks()
             if not self.is_mini:
-                self.redraw_circular_timer()
+                self.redraw_full_canvas()
                 self.update_auto_scale_ui(new_w)
         except Exception:
             pass
@@ -775,6 +783,48 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
         except Exception as err:
             self.log_cmd(f"⚠️ Snap error: {err}")
 
+    def redraw_full_canvas(self):
+        """วาดวงแหวนและตัวเลขนับถอยหลัง ปรับขนาดตามหน้าต่างจริง (ลดลง 60% ตามสั่ง ไม่กินพื้นที่การ์ด)"""
+        if not hasattr(self, 'canvas_full') or not self.canvas_full.winfo_exists():
+            return
+        remaining_seconds, total_seconds = self.calculate_remaining()
+        mins = int(remaining_seconds) // 60
+        secs = int(remaining_seconds) % 60
+        countdown_str = f"{mins:02d}:{secs:02d}"
+
+        if remaining_seconds <= 120:
+            theme_color = "#ff4d4f" if self.pulse_state else "#ff7875"
+        elif remaining_seconds <= 300:
+            theme_color = "#f59e0b"
+        else:
+            theme_color = "#00f2fe"
+
+        self.canvas_full.delete("all")
+        cw = self.canvas_full.winfo_width()
+        ch = self.canvas_full.winfo_height()
+        if cw <= 1 or ch <= 1:
+            cw = self.win_bg.winfo_width()
+            ch = max(80, self.win_bg.winfo_height() - 250)
+            
+        cx = cw / 2
+        cy = ch / 2
+        # ขนาดวงแหวนตรงกลางสัดส่วนกระชับพอดีกับการ์ด Pool ซ้ายและขวา
+        r = max(24, min(36, int(min(cw * 0.40, ch * 0.40))))
+        
+        # รางหลังวงแหวน
+        self.canvas_full.create_oval(cx - r, cy - r, cx + r, cy + r, outline="#1e293b", width=4)
+        
+        # วงแหวน Progress
+        fraction = remaining_seconds / total_seconds
+        extent = fraction * 360
+        self.canvas_full.create_arc(cx - r, cy - r, cx + r, cy + r, 
+                                   start=90, extent=extent, 
+                                   outline=theme_color, width=4, style=tk.ARC)
+        
+        # ตัวเลขนับถอยหลัง 20 นาที สว่างจ้า คมชัด
+        font_sz = max(11, int(r * 0.58))
+        self.canvas_full.create_text(cx, cy, text=countdown_str, 
+                                     font=("Consolas", font_sz, "bold"), fill="#ffffff")
 
     def set_preset_size(self, w, h):
         """ปุ่มลัดเลือกขนาดหน้าต่าง S/M/L ในตั้งค่า"""
@@ -1223,7 +1273,20 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
             except:
                 pass
 
+    def close_app(self):
+        self.save_config()
+        if self.settings_win and self.settings_win.winfo_exists():
+            self.settings_win.destroy()
+        if self.map_picker_win and self.map_picker_win.winfo_exists():
+            self.map_picker_win.destroy()
+        if self.bottom_panel_win and self.bottom_panel_win.winfo_exists():
+            self.bottom_panel_win.destroy()
+        self.root.destroy()
+        os._exit(0)
 
+    # -------------------------------------------------------------
+    # 🗂️ หน้าต่างแยกเมนูด้านล่าง (Detached Bottom Panel Modal)
+    # -------------------------------------------------------------
     def setup_ui_elements(self):
         for w in self.main_container.winfo_children():
             w.destroy()
@@ -1896,7 +1959,25 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
         self.show_nxpc_thb = not self.show_nxpc_thb
         self._update_nxpc_label()
 
-
+    def redraw_timer_bar(self):
+        if not hasattr(self, 'canvas_timer') or not self.canvas_timer.winfo_exists():
+            return
+        self.canvas_timer.delete("all")
+        w = self.canvas_timer.winfo_width()
+        h = self.canvas_timer.winfo_height()
+        rem, tot = self.calculate_remaining()
+        
+        # ถ้ารันอยู่ แสดงความคืบหน้าจากซ้ายไปขวา
+        if tot > 0:
+            progress = (tot - rem) / tot
+        else:
+            progress = 0
+            
+        bar_w = w * progress
+        # พื้นหลังของ bar
+        self.canvas_timer.create_rectangle(0, 0, w, h, fill="#0f172a", outline="")
+        # หลอดเวลา
+        self.canvas_timer.create_rectangle(0, 0, bar_w, h, fill="#38bdf8", outline="")
 
     def redraw_circular_timer(self, remaining_seconds, total_seconds, countdown_str, theme_color):
         """วาดนาฬิกาวงแหวนกลมนับถอยหลังแบบสมัยแรก พร้อมตัวเลขนับเวลาขนาดใหญ่ 17 bold ตรงกลาง"""
@@ -1998,7 +2079,9 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
             else:
                 self.lbl_poll_countdown.config(text=f"🔄 {poll_remain}s{eco_tag}", fg="#94a3b8")
 
-
+        # อัปเดตแถบเวลาแนวนอน
+        if not self.is_mini and getattr(self, 'canvas_timer', None) is not None and self.canvas_timer.winfo_exists():
+            self.redraw_timer_bar()
 
         # 🔔 แจ้งเตือนล่วงหน้า 30 วินาที (ตอนนาทีที่ 19:30 ของรอบ 20 นาที - รองรับทั้ง 2 โหมด)
         if remaining_seconds <= 30 and remaining_seconds > 1:
