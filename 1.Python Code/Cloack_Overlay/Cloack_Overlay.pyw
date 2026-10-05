@@ -363,8 +363,8 @@ class TimerToolApp:
         self.bg_color = "#121418" # พื้นหลังคุมโทน MS แท้ๆ
         
         # ขนาดเริ่มต้น Default สัดส่วนกะทัดรัดใหม่ (กว้างพอดีและไม่ล้นจอ)
-        self.full_w = 460
-        self.full_h = 355
+        self.full_w = 170
+        self.full_h = 380
         self.mini_w = 560
         self.mini_h = 72
         
@@ -439,8 +439,9 @@ class TimerToolApp:
         self.lbl_poll_countdown = None
         self.last_ocr_map_str = ""  # จำ OCR text ล่าสุดเพื่อ Same-Map Retention
         
-        self.pos_x = 100
-        self.pos_y = 100
+        self.pos_x = 0
+        self.pos_y = 20
+        self.is_compact_folded = True
         self.custom_ocr_region = None
         self.custom_char_ocr_region = None
         self.current_char_name = ""
@@ -2778,8 +2779,8 @@ class TimerToolApp:
                     self.pos_x = cfg.get("pos_x", 100)
                     self.pos_y = cfg.get("pos_y", 100)
                     # จำการปรับขนาดล่าสุดไว้ในคอนฟิก (ถ้ามีในไฟล์คอนฟิกให้โหลดมาใช้ ถ้าไม่มีใช้ค่าเริ่มต้น)
-                    self.full_w = max(290, cfg.get("full_w", 460))
-                    self.full_h = max(215, cfg.get("full_h", 355))
+                    self.full_w = max(160, cfg.get("full_w", 170))
+                    self.full_h = max(200, cfg.get("full_h", 380))
                     self.mini_w = max(460, cfg.get("mini_w", 560))
                     self.mini_h = max(64, cfg.get("mini_h", 72))
                     self.opacity = cfg.get("opacity", 1.0)
@@ -2790,7 +2791,7 @@ class TimerToolApp:
                     self.selected_group_name = cfg.get("selected_group_name", "")
                     self.is_pinned = cfg.get("is_pinned", False)
                     self.is_mini = False # ดีฟอลต์เวลาเปิดโปรแกรมคือหน้าต่างหลักเสมอตามคำสั่ง
-                    self.is_compact_folded = cfg.get("is_compact_folded", False)
+                    self.is_compact_folded = cfg.get("is_compact_folded", True)
                     self.wallet_addr = cfg.get("wallet_addr", self.wallet_addr)
                     self.custom_ocr_region = cfg.get("custom_ocr_region", None)
                     self.custom_char_ocr_region = cfg.get("custom_char_ocr_region", None)
@@ -2815,9 +2816,9 @@ class TimerToolApp:
                     self.mini_w = max(460, cur_w)
                     self.mini_h = max(64, cur_h)
                 else:
-                    self.full_w = max(290, cur_w)
+                    self.full_w = max(160, cur_w)
                     if not getattr(self, 'is_compact_folded', False):
-                        self.full_h = max(215, cur_h)
+                        self.full_h = max(200, cur_h)
         except Exception:
             pass
 
@@ -2867,7 +2868,7 @@ class TimerToolApp:
         if self.is_mini:
             h = self.mini_h
         elif getattr(self, 'is_compact_folded', False):
-            h = 275
+            h = 380 if self.full_w <= 240 else 275
         else:
             h = self.full_h
         geom = f"{w}x{h}+{self.pos_x}+{self.pos_y}"
@@ -2921,19 +2922,19 @@ class TimerToolApp:
         dx = event.x_root - self._resize_start_x
         dy = event.y_root - self._resize_start_y
         
-        # 🔒 ฟิกลิมิตขั้นต่ำ ป้องกันการย่อจนตัวอักษรและปุ่มมุดหาย
+        # 🔒 ฟิกลิมิตขั้นต่ำ ป้องกันการย่อจนตัวอักษรและปุ่มมุดหาย (รองรับ Vertical Sidebar แคบ 160px)
         if self.is_mini:
             new_w = max(460, self._start_w + dx)
             new_h = 64
             self.mini_w = new_w
             self.mini_h = new_h
         elif getattr(self, 'is_compact_folded', False):
-            new_w = max(330, self._start_w + dx)
-            new_h = max(260, self._start_h + dy)
+            new_w = max(160, self._start_w + dx)
+            new_h = max(200, self._start_h + dy)
             self.full_w = new_w
         else:
-            new_w = max(330, self._start_w + dx)
-            new_h = max(260, self._start_h + dy)
+            new_w = max(160, self._start_w + dx)
+            new_h = max(200, self._start_h + dy)
             self.full_w = new_w
             self.full_h = new_h
             
@@ -3038,10 +3039,22 @@ class TimerToolApp:
 
         # 1. แถบหัวเขียว (BOOST DROP! & Rate)
         if hasattr(self, 'lbl_flame') and self.lbl_flame.winfo_exists():
-            if w < 380:
+            if w <= 240:
+                self.lbl_flame.config(text="💧 BOOST", font=("Segoe UI", 7, "bold"))
+            elif w < 380:
                 self.lbl_flame.config(text="💧 BOOST", font=("Segoe UI", 7, "bold"))
             else:
                 self.lbl_flame.config(text="💧 BOOST DROP!", font=("Segoe UI", 7, "bold"))
+
+        # ย่อ Title และปุ่มเลือกแมพเมื่อจอแคบ
+        if hasattr(self, 'lbl_title') and self.lbl_title.winfo_exists():
+            self.lbl_title.config(text="⏰" if w <= 240 else "⏰ COS Clock")
+        if hasattr(self, 'lbl_arr') and self.lbl_arr.winfo_exists():
+            self.lbl_arr.config(text="▾" if w <= 240 else "เลือกแมพ ▾ ")
+        if hasattr(self, 'lbl_map_main') and self.lbl_map_main.winfo_exists():
+            self.lbl_map_main.config(wraplength=max(80, w - 50))
+        if hasattr(self, 'lbl_map_sub') and self.lbl_map_sub.winfo_exists():
+            self.lbl_map_sub.config(wraplength=max(80, w - 50))
 
         # 2. ปรับขนาด Font และข้อความตามความกว้างหน้าต่าง
         if w >= 450:
@@ -3062,7 +3075,16 @@ class TimerToolApp:
             sure_prefix = "[ดรอปแน่นอน] "
             extra_prefix = "[+1] "
             rate_prefix = "📊 ดรอป:"
-        else: # แคบมาก (< 390)
+        elif w <= 240: # แคบพิเศษแบบแถบข้าง Vertical HUD
+            f_main_lbl = ("Segoe UI", 7, "bold")
+            f_main_val = ("Consolas", 7, "bold")
+            f_sub_lbl = ("Segoe UI", 6)
+            f_sub_val = ("Consolas", 6, "bold")
+            unit_neso = " N"
+            sure_prefix = "[แน่นอน] "
+            extra_prefix = "[+1] "
+            rate_prefix = "📊 "
+        else: # แคบปานกลาง (< 390)
             f_main_lbl = ("Segoe UI", 7, "bold")
             f_main_val = ("Consolas", 8, "bold")
             f_sub_lbl = ("Segoe UI", 6)
@@ -3147,7 +3169,7 @@ class TimerToolApp:
                 self.f_red_box.pack_forget()
             if hasattr(self, 'btn_fold_toggle') and self.btn_fold_toggle.winfo_exists():
                 self.btn_fold_toggle.config(text="▲ กางแถบควบคุมล่าง", bg="#2a1616", fg="#fca5a5")
-            fold_h = 275
+            fold_h = 380 if cur_w <= 240 else 275
             geom = f"{cur_w}x{fold_h}+{self.pos_x}+{self.pos_y}"
             self.win_bg.geometry(geom)
             self.win_fg.geometry(geom)
@@ -3637,11 +3659,11 @@ class TimerToolApp:
         sz_box = tk.Frame(f_sz, bg="#121721")
         sz_box.pack(fill=tk.X, pady=2)
         
-        sizes = [("S เล็ก", 245, 385), ("M กลาง", 265, 410), ("L ใหญ่", 290, 440)]
+        sizes = [("📱 แถบซ้าย", 170, 380), ("S เล็ก", 245, 385), ("M กลาง", 265, 410), ("L ใหญ่", 460, 355)]
         for label, sw, sh in sizes:
-            btn_sz = tk.Label(sz_box, text=label, font=("Segoe UI", 8), bg="#1e293b", fg="#e2e8f0", cursor="hand2", padx=8, pady=2)
+            btn_sz = tk.Label(sz_box, text=label, font=("Segoe UI", 7, "bold"), bg="#1e293b", fg="#e2e8f0", cursor="hand2", padx=6, pady=2)
             btn_sz.pack(side=tk.LEFT, padx=2)
-            btn_sz.bind("<Button-1>", lambda e, w=sw, h=sh: self.set_preset_size(w, h))
+            btn_sz.bind("<Button-1>", lambda e, w=sw, h=sh: [setattr(self, 'is_compact_folded', (w <= 240)), self.set_preset_size(w, h)])
 
         # 4. ตัวเลือกโหมด: ServerTime หรือ Manual
         f_mode = tk.Frame(self.settings_win, bg="#121721")
@@ -3818,6 +3840,10 @@ class TimerToolApp:
             # =========================================================
             # 🔵 โหมดเต็ม FULL OVERLAY
             # =========================================================
+            is_vert = (getattr(self, 'full_w', 170) <= 240)
+            btn_w = 1 if is_vert else 2
+            btn_padx = 0 if is_vert else 1
+
             # 1. แถบ Title Bar ด้านบนสุด
             top_bar = tk.Frame(self.main_container, bg="#121824", height=24)
             top_bar.pack(fill=tk.X, side=tk.TOP)
@@ -3826,54 +3852,59 @@ class TimerToolApp:
             top_bar.bind("<ButtonRelease-1>", self.end_drag)
 
             # ปุ่มชิดขวา (pack side=tk.RIGHT ก่อนตามกฎเหล็ก)
-            btn_close = tk.Label(top_bar, text="✕", font=("Segoe UI", 9, "bold"), fg="#ff4d4f", bg="#121824", cursor="hand2", width=2)
-            btn_close.pack(side=tk.RIGHT, padx=1)
+            btn_close = tk.Label(top_bar, text="✕", font=("Segoe UI", 9, "bold"), fg="#ff4d4f", bg="#121824", cursor="hand2", width=btn_w)
+            btn_close.pack(side=tk.RIGHT, padx=btn_padx)
             btn_close.bind("<Button-1>", lambda e: self.close_app())
 
-            btn_mini = tk.Label(top_bar, text="—", font=("Segoe UI", 9, "bold"), fg="#00f2fe", bg="#121824", cursor="hand2", width=2)
-            btn_mini.pack(side=tk.RIGHT, padx=1)
+            btn_mini = tk.Label(top_bar, text="—", font=("Segoe UI", 9, "bold"), fg="#00f2fe", bg="#121824", cursor="hand2", width=btn_w)
+            btn_mini.pack(side=tk.RIGHT, padx=btn_padx)
             btn_mini.bind("<Button-1>", lambda e: self.toggle_compact_fold())
 
-            btn_cfg = tk.Label(top_bar, text="⚙", font=("Segoe UI", 9), fg="#94a3b8", bg="#121824", cursor="hand2", width=2)
-            btn_cfg.pack(side=tk.RIGHT, padx=1)
+            btn_cfg = tk.Label(top_bar, text="⚙", font=("Segoe UI", 9), fg="#94a3b8", bg="#121824", cursor="hand2", width=btn_w)
+            btn_cfg.pack(side=tk.RIGHT, padx=btn_padx)
             btn_cfg.bind("<Button-1>", lambda e: self.open_settings())
 
-            btn_alpha = tk.Label(top_bar, text="🌓", font=("Segoe UI", 9), fg="#38bdf8", bg="#121824", cursor="hand2", width=2)
-            btn_alpha.pack(side=tk.RIGHT, padx=1)
+            btn_alpha = tk.Label(top_bar, text="🌓", font=("Segoe UI", 9), fg="#38bdf8", bg="#121824", cursor="hand2", width=btn_w)
+            btn_alpha.pack(side=tk.RIGHT, padx=btn_padx)
             btn_alpha.bind("<Button-1>", lambda e: self.cycle_opacity())
             btn_alpha.bind("<Enter>", lambda e: btn_alpha.config(fg="#ffffff"))
             btn_alpha.bind("<Leave>", lambda e: btn_alpha.config(fg="#38bdf8"))
 
             # ฝั่งซ้ายของ Title Bar
-            lbl_title = tk.Label(top_bar, text="⏰ COS Clock", font=("Segoe UI", 8, "bold"), fg="#38bdf8", bg="#121824")
-            lbl_title.pack(side=tk.LEFT, padx=6)
+            title_text = "⏰" if is_vert else "⏰ COS Clock"
+            lbl_title = tk.Label(top_bar, text=title_text, font=("Segoe UI", 8, "bold"), fg="#38bdf8", bg="#121824")
+            lbl_title.pack(side=tk.LEFT, padx=(3 if is_vert else 6, 2))
             lbl_title.bind("<ButtonPress-1>", self.start_drag)
             lbl_title.bind("<B1-Motion>", self.do_drag)
             lbl_title.bind("<ButtonRelease-1>", self.end_drag)
+            self.lbl_title = lbl_title
 
-            btn_srv_f = tk.Label(top_bar, text=f"[{self.server_name}▾]", font=("Consolas", 8, "bold"), fg="#f59e0b", bg="#121824", cursor="hand2")
-            btn_srv_f.pack(side=tk.LEFT, padx=2)
+            srv_text = f"[{self.server_name[:1]}▾]" if is_vert else f"[{self.server_name}▾]"
+            btn_srv_f = tk.Label(top_bar, text=srv_text, font=("Consolas", 8, "bold"), fg="#f59e0b", bg="#121824", cursor="hand2")
+            btn_srv_f.pack(side=tk.LEFT, padx=1)
             btn_srv_f.bind("<Button-1>", lambda e, w=btn_srv_f: self.show_server_dropdown(w))
 
-            mode_tag_f = "ServerTime" if self.mode == "ServerTime" else "Manual"
+            mode_tag_f = ("ST" if self.mode == "ServerTime" else "MN") if is_vert else ("ServerTime" if self.mode == "ServerTime" else "Manual")
             lbl_m_f = tk.Label(top_bar, text=f"[{mode_tag_f}▾]", font=("Consolas", 8, "bold"), 
                                fg="#38ef7d" if self.mode == "ServerTime" else "#f59e0b", bg="#121824", cursor="hand2")
-            lbl_m_f.pack(side=tk.LEFT, padx=2)
+            lbl_m_f.pack(side=tk.LEFT, padx=1)
             lbl_m_f.bind("<Button-1>", lambda e, w=lbl_m_f: self.show_mode_dropdown(w))
 
             # 2. แถบ Map Banner ใต้ Title Bar (โปร่งใส + StrokeLabel คมชัด สไตล์ Game HUD)
             f_banner = tk.Frame(self.main_container, bg=self.trans_key, bd=0, cursor="hand2")
-            f_banner.pack(side=tk.TOP, fill=tk.X, padx=6, pady=(3, 1))
+            f_banner.pack(side=tk.TOP, fill=tk.X, padx=4 if is_vert else 6, pady=(2 if is_vert else 3, 1))
             f_banner.bind("<Button-1>", lambda e: self.open_map_picker())
 
             # ปุ่มเลือกแมพชิดขวา (pack ก่อนฝั่งซ้ายตามกฎเหล็ก!)
-            lbl_arr = StrokeLabel(f_banner, text="เลือกแมพ ▾ ", font=("Segoe UI", 7, "bold"),
+            arr_txt = "▾" if is_vert else "เลือกแมพ ▾ "
+            lbl_arr = StrokeLabel(f_banner, text=arr_txt, font=("Segoe UI", 7, "bold"),
                                   fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="e", cursor="hand2")
-            lbl_arr.pack(side=tk.RIGHT, padx=4)
+            lbl_arr.pack(side=tk.RIGHT, padx=2 if is_vert else 4)
             lbl_arr.bind("<Button-1>", lambda e: self.open_map_picker())
+            self.lbl_arr = lbl_arr
 
             self.lbl_map_icon = tk.Label(f_banner, bg=self.trans_key, cursor="hand2")
-            self.lbl_map_icon.pack(side=tk.LEFT, padx=(4, 2))
+            self.lbl_map_icon.pack(side=tk.LEFT, padx=(2, 2) if is_vert else (4, 2))
             self.lbl_map_icon.bind("<Button-1>", lambda e: self.open_map_picker())
 
             f_map_txts = tk.Frame(f_banner, bg=self.trans_key, cursor="hand2")
@@ -3883,13 +3914,14 @@ class TimerToolApp:
             # ใช้ค่าปัจจุบันแทน placeholder เพื่อป้องกัน UI กระพริบ
             _cur_main = self.selected_layer_name if self.selected_layer_name else "รอตรวจจับแมพ..."
             _cur_sub = f"📍 {self.detected_submap_name}" if getattr(self, 'detected_submap_name', '') else "📍 กด Scan Map หรือเลือกแมพ"
+            wrap_len = 105 if is_vert else 0
             self.lbl_map_main = StrokeLabel(f_map_txts, text=_cur_main, font=("Segoe UI", 8, "bold"),
-                                            fg="#e2e8f0", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="w", cursor="hand2")
+                                            fg="#e2e8f0", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="w", cursor="hand2", wraplength=wrap_len)
             self.lbl_map_main.pack(fill=tk.X)
             self.lbl_map_main.bind("<Button-1>", lambda e: self.open_map_picker())
 
             self.lbl_map_sub = StrokeLabel(f_map_txts, text=_cur_sub, font=("Segoe UI", 7),
-                                           fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="w", cursor="hand2")
+                                           fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="w", cursor="hand2", wraplength=wrap_len)
             self.lbl_map_sub.pack(fill=tk.X)
             self.lbl_map_sub.bind("<Button-1>", lambda e: self.open_map_picker())
 
@@ -3904,10 +3936,14 @@ class TimerToolApp:
             f_pool_zone.bind("<B1-Motion>", self.do_drag)
             f_pool_zone.bind("<ButtonRelease-1>", self.end_drag)
 
-            # 1. Left: Timer Zone (Fixed Width ~108px - กว้างพอดีสำหรับ Badges คู่ด้านล่าง)
-            f_timer_zone = tk.Frame(f_pool_zone, bg=self.trans_key, bd=0, width=108)
-            f_timer_zone.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 2), pady=0)
-            f_timer_zone.pack_propagate(False)
+            # 1. Left / Top: Timer Zone
+            if is_vert:
+                f_timer_zone = tk.Frame(f_pool_zone, bg=self.trans_key, bd=0)
+                f_timer_zone.pack(side=tk.TOP, fill=tk.X, padx=2, pady=(0, 2))
+            else:
+                f_timer_zone = tk.Frame(f_pool_zone, bg=self.trans_key, bd=0, width=108)
+                f_timer_zone.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 2), pady=0)
+                f_timer_zone.pack_propagate(False)
             f_timer_zone.bind("<ButtonPress-1>", self.start_drag)
             f_timer_zone.bind("<B1-Motion>", self.do_drag)
             f_timer_zone.bind("<ButtonRelease-1>", self.end_drag)
@@ -3976,7 +4012,7 @@ class TimerToolApp:
 
             # 🪙 กล่องเหรียญ NESO 2 กล่องมาเรียงคู่กันใต้ตัวจับเวลา (ตามรูปกรอบสีน้ำตาลในแถบเขียวทึบ)
             f_timer_badges = tk.Frame(f_timer_zone, bg="#08101a")
-            f_timer_badges.pack(side=tk.BOTTOM, fill=tk.X, padx=3, pady=(0, 3))
+            f_timer_badges.pack(side=tk.TOP if is_vert else tk.BOTTOM, fill=tk.X, padx=3, pady=(0, 3))
             f_timer_badges.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
             coin_img = self.get_neso_coin_photo(size=18)
@@ -4023,9 +4059,12 @@ class TimerToolApp:
             self.lbl_neso_badge_stock.pack(padx=2, pady=(0, 1))
             self.lbl_neso_badge_stock.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
-            # 2. Right: Boost Pool Container (Expanded & Rich Display + Dual Badges at bottom-right)
+            # 2. Boost Pool Container (Expanded & Rich Display)
             c_boost_container = tk.Frame(f_pool_zone, bg=self.trans_key)
-            c_boost_container.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            if is_vert:
+                c_boost_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=(2, 0))
+            else:
+                c_boost_container.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
             # Top Green: แถบหัวข้อย้าย % รวมมาไว้ตรงกลาง
             c_boost_top = tk.Frame(c_boost_container, bg="#14532d", bd=1, relief="solid", 
@@ -4068,11 +4107,12 @@ class TimerToolApp:
             # การ์ดป้ายสี่เหลี่ยมสีขาว Safe Zone เด่นตรงกลาง (ตามรูป ร.1 ของผู้ใช้ สไตล์โมเดิร์นคลีน)
             f_sz_card = tk.Frame(f_safe_zone_banner, bg="#ffffff", bd=1, relief="solid",
                                  highlightbackground="#94a3b8", highlightthickness=1)
-            f_sz_card.pack(expand=True, padx=16, pady=(8, 3))
+            f_sz_card.pack(expand=True, padx=4 if is_vert else 16, pady=(4 if is_vert else 8, 2 if is_vert else 3))
             f_sz_card.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
-            self.lbl_sz_title = tk.Label(f_sz_card, text="Safe Zone", font=("Segoe UI", 13, "bold"),
-                                         fg="#0f172a", bg="#ffffff", padx=26, pady=5)
+            sz_title_f = ("Segoe UI", 10, "bold") if is_vert else ("Segoe UI", 13, "bold")
+            self.lbl_sz_title = tk.Label(f_sz_card, text="Safe Zone", font=sz_title_f,
+                                         fg="#0f172a", bg="#ffffff", padx=10 if is_vert else 26, pady=3 if is_vert else 5)
             self.lbl_sz_title.pack()
             self.lbl_sz_title.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
@@ -4089,110 +4129,118 @@ class TimerToolApp:
 
             # แถว 1: ⚡ คาดว่าจะได้รับ: X ~ Y NESO (วิ่งยาวเต็มแถว ไม่โดนตัดขอบ!)
             f_row_exp = tk.Frame(f_boost_info_left, bg=self.trans_key)
-            f_row_exp.pack(fill=tk.X, padx=5, pady=(2, 2), anchor="w")
+            f_row_exp.pack(fill=tk.X, padx=3 if is_vert else 5, pady=(1 if is_vert else 2, 1), anchor="w")
             f_row_exp.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
-            lbl_exp_t = StrokeLabel(f_row_exp, text="⚡ คาดว่าจะได้รับ:", font=("Segoe UI", 9, "bold"),
+            exp_txt = "⚡ คาดหวัง:" if is_vert else "⚡ คาดว่าจะได้รับ:"
+            exp_font = ("Segoe UI", 7, "bold") if is_vert else ("Segoe UI", 9, "bold")
+            lbl_exp_t = StrokeLabel(f_row_exp, text=exp_txt, font=exp_font,
                                     fg="#fbbf24", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             lbl_exp_t.pack(side=tk.LEFT)
             lbl_exp_t.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.lbl_exp_t = lbl_exp_t
 
-            self.lbl_boost_expected = StrokeLabel(f_row_exp, text=" --", font=("Consolas", 10, "bold"),
+            val_font = ("Consolas", 7, "bold") if is_vert else ("Consolas", 10, "bold")
+            self.lbl_boost_expected = StrokeLabel(f_row_exp, text=" --", font=val_font,
                                                   fg="#facc15", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             self.lbl_boost_expected.pack(side=tk.LEFT)
             self.lbl_boost_expected.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
             # แถว 2: Container รวมข้อมูลแน่นอน และ +1 ดรอป (รองรับตัดบรรทัดอัตโนมัติเมื่อโดนบีบแคบ)
             f_row_sure = tk.Frame(f_boost_info_left, bg=self.trans_key)
-            f_row_sure.pack(fill=tk.X, padx=5, pady=(1, 2), anchor="w")
+            f_row_sure.pack(fill=tk.X, padx=3 if is_vert else 5, pady=(1, 1), anchor="w")
             f_row_sure.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.f_row_sure = f_row_sure
 
             # ส่วนที่ 1: ดรอปแน่นอน
             f_sure_part1 = tk.Frame(f_row_sure, bg=self.trans_key)
-            f_sure_part1.pack(side=tk.LEFT, anchor="w")
+            f_sure_part1.pack(side=tk.TOP if is_vert else tk.LEFT, anchor="w")
             f_sure_part1.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.f_sure_part1 = f_sure_part1
 
-            lbl_sure_t = StrokeLabel(f_sure_part1, text="[ดรอปแน่นอน] ", font=("Segoe UI", 9, "bold"),
+            sure_txt = "[แน่นอน] " if is_vert else "[ดรอปแน่นอน] "
+            lbl_sure_t = StrokeLabel(f_sure_part1, text=sure_txt, font=exp_font,
                                      fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             lbl_sure_t.pack(side=tk.LEFT)
             lbl_sure_t.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.lbl_sure_t = lbl_sure_t
 
-            self.lbl_boost_sure_val = StrokeLabel(f_sure_part1, text="--", font=("Consolas", 10, "bold"),
+            self.lbl_boost_sure_val = StrokeLabel(f_sure_part1, text="--", font=val_font,
                                                   fg="#ffffff", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             self.lbl_boost_sure_val.pack(side=tk.LEFT)
             self.lbl_boost_sure_val.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
             # ส่วนที่ 2: +1 ดรอป
             f_sure_part2 = tk.Frame(f_row_sure, bg=self.trans_key)
-            f_sure_part2.pack(side=tk.LEFT, anchor="w")
+            f_sure_part2.pack(side=tk.TOP if is_vert else tk.LEFT, anchor="w", pady=(1, 0) if is_vert else (0, 0))
             f_sure_part2.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.f_sure_part2 = f_sure_part2
 
-            lbl_sure_p = StrokeLabel(f_sure_part2, text=" + ", font=("Segoe UI", 9, "bold"),
+            plus_txt = "+ " if is_vert else " + "
+            lbl_sure_p = StrokeLabel(f_sure_part2, text=plus_txt, font=exp_font,
                                      fg="#94a3b8", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             lbl_sure_p.pack(side=tk.LEFT)
             lbl_sure_p.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.lbl_sure_p = lbl_sure_p
 
-            lbl_extra_t = StrokeLabel(f_sure_part2, text="[+1 ดรอป] ", font=("Segoe UI", 9, "bold"),
+            extra_txt = "[+1] " if is_vert else "[+1 ดรอป] "
+            lbl_extra_t = StrokeLabel(f_sure_part2, text=extra_txt, font=exp_font,
                                       fg="#4ade80", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             lbl_extra_t.pack(side=tk.LEFT)
             lbl_extra_t.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.lbl_extra_t = lbl_extra_t
 
-            self.lbl_boost_sure_rate = StrokeLabel(f_sure_part2, text="--", font=("Consolas", 10, "bold"),
+            self.lbl_boost_sure_rate = StrokeLabel(f_sure_part2, text="--", font=val_font,
                                                    fg="#4ade80", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             self.lbl_boost_sure_rate.pack(side=tk.LEFT)
             self.lbl_boost_sure_rate.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
             # แถว 3: 📊 อัตราดรอป: 169.15% (50% + 119.15%)
             f_row_rate = tk.Frame(f_boost_info_left, bg=self.trans_key)
-            f_row_rate.pack(fill=tk.X, padx=5, pady=(1, 2), anchor="w")
+            f_row_rate.pack(fill=tk.X, padx=3 if is_vert else 5, pady=(1, 1), anchor="w")
             f_row_rate.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
-            lbl_rate_t = StrokeLabel(f_row_rate, text="📊 อัตราดรอป:", font=("Segoe UI", 7),
+            rate_lbl_txt = "📊 " if is_vert else "📊 อัตราดรอป:"
+            lbl_rate_t = StrokeLabel(f_row_rate, text=rate_lbl_txt, font=("Segoe UI", 6 if is_vert else 7),
                                      fg="#94a3b8", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             lbl_rate_t.pack(side=tk.LEFT)
             lbl_rate_t.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.lbl_rate_t = lbl_rate_t
 
-            self.lbl_boost_rate_total = StrokeLabel(f_row_rate, text=" --%", font=("Consolas", 7, "bold"),
+            self.lbl_boost_rate_total = StrokeLabel(f_row_rate, text=" --%", font=("Consolas", 6 if is_vert else 7, "bold"),
                                                     fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             self.lbl_boost_rate_total.pack(side=tk.LEFT)
             self.lbl_boost_rate_total.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
-            self.lbl_boost_rate_breakdown = StrokeLabel(f_row_rate, text=" (--% + --%)", font=("Consolas", 7),
+            self.lbl_boost_rate_breakdown = StrokeLabel(f_row_rate, text=" (--% + --%)", font=("Consolas", 6 if is_vert else 7),
                                                         fg="#fb923c", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             self.lbl_boost_rate_breakdown.pack(side=tk.LEFT)
             self.lbl_boost_rate_breakdown.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
             # แถว 4: 📦 เหลือ: X NESO  |  ชาร์จ/รอบ: Y
             f_row_stk = tk.Frame(f_boost_info_left, bg=self.trans_key)
-            f_row_stk.pack(fill=tk.X, padx=5, pady=(1, 2), anchor="w")
+            f_row_stk.pack(fill=tk.X, padx=3 if is_vert else 5, pady=(1, 1), anchor="w")
             f_row_stk.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
-            lbl_stk_t = StrokeLabel(f_row_stk, text="📦 เหลือ:", font=("Segoe UI", 7),
+            stk_lbl_txt = "📦 " if is_vert else "📦 เหลือ:"
+            lbl_stk_t = StrokeLabel(f_row_stk, text=stk_lbl_txt, font=("Segoe UI", 6 if is_vert else 7),
                                     fg="#94a3b8", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             lbl_stk_t.pack(side=tk.LEFT)
             lbl_stk_t.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.lbl_stk_t = lbl_stk_t
 
-            self.lbl_neso_boost_stock = StrokeLabel(f_row_stk, text=" --- NESO", font=("Consolas", 7, "bold"),
+            self.lbl_neso_boost_stock = StrokeLabel(f_row_stk, text=" --- NESO", font=("Consolas", 6 if is_vert else 7, "bold"),
                                                     fg="#38ef7d", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             self.lbl_neso_boost_stock.pack(side=tk.LEFT)
             self.lbl_neso_boost_stock.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
 
-            lbl_chg_t = StrokeLabel(f_row_stk, text=" | ชาร์จ: ", font=("Segoe UI", 7),
+            lbl_chg_t = StrokeLabel(f_row_stk, text=" | +", font=("Segoe UI", 6 if is_vert else 7),
                                     fg="#64748b", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             lbl_chg_t.pack(side=tk.LEFT)
             lbl_chg_t.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
             self.lbl_chg_t = lbl_chg_t
 
-            self.lbl_neso_boost_charge = StrokeLabel(f_row_stk, text=" ---", font=("Consolas", 7, "bold"),
+            self.lbl_neso_boost_charge = StrokeLabel(f_row_stk, text="---", font=("Consolas", 6 if is_vert else 7, "bold"),
                                                      fg="#38bdf8", bg=self.trans_key, stroke_color="#000000", stroke_width=1)
             self.lbl_neso_boost_charge.pack(side=tk.LEFT)
             self.lbl_neso_boost_charge.bind("<Button-1>", lambda e: self.fetch_drop_data_async())
@@ -4201,7 +4249,7 @@ class TimerToolApp:
             # 2. พื้นที่ว่างขวาล่าง: แถบแนะนำแมพในโซน (แสดงผลอย่างเดียว) + กล่อง Mini CMD Box + Grip
             # ---------------------------------------------------------
             f_bot_action = tk.Frame(c_boost_bot, bg=self.trans_key)
-            f_bot_action.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=(1, 3))
+            f_bot_action.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=3 if is_vert else 5, pady=(1, 2))
             self.f_bot_action = f_bot_action
 
             # แถวบน: แถบแนะนำแมพในโซนที่ % สูงสุด (โปร่งใสตามคำสั่งผู้ใช้ + StrokeLabel คมชัด สไตล์ Game HUD)
