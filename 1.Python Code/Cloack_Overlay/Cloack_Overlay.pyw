@@ -366,7 +366,7 @@ class TimerToolApp:
         self.v2_w = 460
         self.v2_h = 355
         self.sidebar_w = 210
-        self.sidebar_h = 470
+        self.sidebar_h = 535
         self.full_w = 460
         self.full_h = 355
         self.mini_w = 560
@@ -2792,7 +2792,7 @@ class TimerToolApp:
                     self.v2_w = max(245, cfg.get("v2_w", 460))
                     self.v2_h = max(200, cfg.get("v2_h", 355))
                     self.sidebar_w = max(160, cfg.get("sidebar_w", 210))
-                    self.sidebar_h = max(450, cfg.get("sidebar_h", 470))
+                    self.sidebar_h = max(520, cfg.get("sidebar_h", 535))
                     # บังคับเปิดครั้งแรก/เปิดใหม่ ให้เป็นหน้าต่างหลักปกติ (V.2 แนวนอน) เสมอตามคำสั่งผู้ใช้
                     self.full_w = self.v2_w
                     self.full_h = self.v2_h
@@ -2850,8 +2850,8 @@ class TimerToolApp:
             "full_h": self.full_h,
             "v2_w": getattr(self, 'v2_w', 460),
             "v2_h": getattr(self, 'v2_h', 355),
-            "sidebar_w": getattr(self, 'sidebar_w', 170),
-            "sidebar_h": getattr(self, 'sidebar_h', 380),
+            "sidebar_w": getattr(self, 'sidebar_w', 210),
+            "sidebar_h": getattr(self, 'sidebar_h', 535),
             "mini_w": self.mini_w,
             "mini_h": self.mini_h,
             "custom_font_size": getattr(self, 'custom_font_size', 0),
@@ -3070,7 +3070,7 @@ class TimerToolApp:
         if cur_w <= 240:
             # อยู่โหมดแนวตั้ง (Sidebar) -> จำขนาด sidebar ล่าสุดไว้ แล้วสลับไป V.2 แนวนอน
             self.sidebar_w = cur_w
-            self.sidebar_h = max(450, cur_h)
+            self.sidebar_h = max(520, cur_h)
             self.full_w = getattr(self, 'v2_w', 460)
             self.full_h = getattr(self, 'v2_h', 355)
             self.is_compact_folded = True
@@ -3079,7 +3079,7 @@ class TimerToolApp:
             self.v2_w = cur_w
             self.v2_h = cur_h
             self.full_w = max(160, getattr(self, 'sidebar_w', 210))
-            self.full_h = max(450, getattr(self, 'sidebar_h', 470))
+            self.full_h = max(520, getattr(self, 'sidebar_h', 535))
             self.is_compact_folded = True
 
         self.apply_geometry()
@@ -3325,7 +3325,7 @@ class TimerToolApp:
                 self.f_red_box.pack_forget()
             if hasattr(self, 'btn_fold_toggle') and self.btn_fold_toggle.winfo_exists():
                 self.btn_fold_toggle.config(text="▲ กางแถบควบคุมล่าง", bg="#2a1616", fg="#fca5a5")
-            fold_h = 380 if cur_w <= 240 else 275
+            fold_h = max(520, getattr(self, 'sidebar_h', 535)) if cur_w <= 240 else getattr(self, 'v2_h', 275)
             geom = f"{cur_w}x{fold_h}+{self.pos_x}+{self.pos_y}"
             self.win_bg.geometry(geom)
             self.win_fg.geometry(geom)
@@ -3335,7 +3335,7 @@ class TimerToolApp:
                 self.f_red_box.pack(side=tk.BOTTOM, fill=tk.X, padx=6, pady=(1, 3))
             if hasattr(self, 'btn_fold_toggle') and self.btn_fold_toggle.winfo_exists():
                 self.btn_fold_toggle.config(text="▼ พับเก็บแถบล่าง", bg="#161c28", fg="#64748b")
-            full_h = getattr(self, 'full_h', 355)
+            full_h = max(580, getattr(self, 'sidebar_h', 535) + 60) if cur_w <= 240 else getattr(self, 'full_h', 355)
             geom = f"{cur_w}x{full_h}+{self.pos_x}+{self.pos_y}"
             self.win_bg.geometry(geom)
             self.win_fg.geometry(geom)
@@ -4467,9 +4467,10 @@ class TimerToolApp:
 
             # ---------------------------------------------------------
             # 2. พื้นที่ว่างขวาล่าง: แถบแนะนำแมพในโซน (แสดงผลอย่างเดียว) + กล่อง Mini CMD Box + Grip
+            # (pack ชิดขอบล่างของ c_boost_bot เสมอ ป้องกันการตกขอบหรือหลุดหาย)
             # ---------------------------------------------------------
             f_bot_action = tk.Frame(c_boost_bot, bg=self.trans_key)
-            f_bot_action.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=3 if is_vert else 5, pady=(1, 2))
+            f_bot_action.pack(side=tk.BOTTOM, fill=tk.X, padx=3 if is_vert else 5, pady=(1, 2))
             self.f_bot_action = f_bot_action
 
             # แถวบน: แถบแนะนำแมพในโซนที่ % สูงสุด (โปร่งใสตามคำสั่งผู้ใช้ + StrokeLabel คมชัด สไตล์ Game HUD)
