@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# AI Scrap / Workspace Debris
+0.aเศษซากอรยะธรรมของAI/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments & Local Settings
+.env
+*.local
+*.log
+
+# IDE & OS files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
