@@ -1,0 +1,278 @@
+{
+  "last_reset_date": "2026-10-06",
+  "start_day_neso": 712205.24554,
+  "today_minted_neso": 307647.16,
+  "days": [
+    {
+      "date": "2026-10-06",
+      "minted_neso": 307647.16,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 0.72,
+      "est_thb": 24.27,
+      "details": [
+        {
+          "time": "12:15:51",
+          "neso": 7959.41,
+          "hash": "0x0dd178ea24817cf45811a6b343590d13afcc75eb61c586c1bac74ebf1fb59a61"
+        },
+        {
+          "time": "11:55:18",
+          "neso": 10430.84,
+          "hash": "0xa9891745735f9267a58ac9c3ca3d91ddbc49cb3a000a7497cff374b12c34d6e5"
+        },
+        {
+          "time": "10:34:21",
+          "neso": 282.06,
+          "hash": "0x5422c4f9173089c159f06fe0d455a8386626d00e5fe14c234a80abaccbdbbb31"
+        },
+        {
+          "time": "10:00:14",
+          "neso": 3974.85,
+          "hash": "0x630f6086c51de638447846e43824121d7ab9d865cc6f897cb413fb215099b2ee"
+        },
+        {
+          "time": "07:34:12",
+          "neso": 285000.0,
+          "hash": "0xc52689c0f7ad1a8dad73bdbf438b6a0c1bce3627b657676a465f93f12d2c98d5"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-05",
+      "minted_neso": 797386.15,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 1.87,
+      "est_thb": 62.91,
+      "details": [
+        {
+          "time": "18:00:47",
+          "neso": 16654.67,
+          "hash": "0xe0f22e9d96830d0f06f3a1611e1124618dff04bba0caf72c5c36f93208dfce5b"
+        },
+        {
+          "time": "17:21:03",
+          "neso": 780731.48,
+          "hash": "0x5894b7e39f9b9f315dc0f1258db45d7f154745282690f8476b6b817984e5c43c"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-03",
+      "minted_neso": 2897.77,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 0.01,
+      "est_thb": 0.23,
+      "details": [
+        {
+          "time": "15:48:42",
+          "neso": 2897.77,
+          "hash": "0xb3b68ec875c552e8f66823ab1938e195b8aa3837e5e30cb3ce06ef7635dac0d9"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-02",
+      "minted_neso": 34055.21,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 0.08,
+      "est_thb": 2.69,
+      "details": [
+        {
+          "time": "19:22:32",
+          "neso": 34055.21,
+          "hash": "0x174b307eed512a34626528f057ca62e22fb0d4a8fa42aaf8c85b85e6bec9e53a"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-01",
+      "minted_neso": 219988.92,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 0.52,
+      "est_thb": 17.36,
+      "details": [
+        {
+          "time": "22:34:01",
+          "neso": 29953.65,
+          "hash": "0xe434fa3c9d7532cfb0058c65304b2050035ae454c92c51fdf13ae9fbd8dbab75"
+        },
+        {
+          "time": "07:46:31",
+          "neso": 190035.27,
+          "hash": "0x0a3866a59da500e0c5dcca4a04fdb7226269dd21475a500d1babcd9d460fda66"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-30",
+      "minted_neso": 805727.77,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 1.89,
+      "est_thb": 63.57,
+      "details": [
+        {
+          "time": "00:16:24",
+          "neso": 25812.5,
+          "hash": "0xedd83cb044a4d19e309b9833ee209bc2523287d8cf7067d833f43d52c457e159"
+        },
+        {
+          "time": "00:02:14",
+          "neso": 50463.84,
+          "hash": "0xc56a29260486ce930d01914b86f8be5347b8ba539d5193b2f781ed1fcec9437d"
+        },
+        {
+          "time": "23:40:54",
+          "neso": 34611.27,
+          "hash": "0x715acd9766ce3f095bfe02306eb0fe9196b0333935d7b1edd3dccfe95bd53482"
+        },
+        {
+          "time": "21:34:46",
+          "neso": 43840.16,
+          "hash": "0x65e644fcb9f4e287299e5c25c7ff33d740d0eeda1853a38619d4802df075cdde"
+        },
+        {
+          "time": "19:38:38",
+          "neso": 651000.0,
+          "hash": "0xa04870963ddded05044968a07a9f1df1dd0a011cf8d5496c06f6b1be9bab7463"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-28",
+      "minted_neso": 253000.0,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 0.59,
+      "est_thb": 19.96,
+      "details": [
+        {
+          "time": "15:54:33",
+          "neso": 253000.0,
+          "hash": "0x94023caf2c70f15bf71a1df558dfa5a3d439e9706df933960b93c5b45687750e"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-27",
+      "minted_neso": 204120.5,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 0.48,
+      "est_thb": 16.11,
+      "details": [
+        {
+          "time": "19:17:13",
+          "neso": 34120.5,
+          "hash": "0x95bd2646eb63015a4259fa2f5d0a0aca034f2be10744acc2de421d485bf525ad"
+        },
+        {
+          "time": "18:36:03",
+          "neso": 170000.0,
+          "hash": "0x5d8b92056cf79529bb29bed14f8c642e94c60fa011a6081e2cea896adf238e84"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-26",
+      "minted_neso": 734427.59,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 1.72,
+      "est_thb": 57.95,
+      "details": [
+        {
+          "time": "13:50:53",
+          "neso": 62480.2,
+          "hash": "0x95e557a1708b4a1a70ec564519085b834de503c53fa432b41586a4b3deaa363b"
+        },
+        {
+          "time": "13:20:49",
+          "neso": 63047.92,
+          "hash": "0xacac4b3607799f7e129132feddc67f852186c2e06f4d041ac0671c1c12fe9f6e"
+        },
+        {
+          "time": "13:00:50",
+          "neso": 38923.32,
+          "hash": "0x649f0e574feb9929eae1874c498d5db3b28ce73faacabcbc2d77c9cf8fecf410"
+        },
+        {
+          "time": "12:50:33",
+          "neso": 32976.15,
+          "hash": "0x736a98e3b7bc22c0ca1ad407a73c739080b0fddb650d606b1631d35c2337d7af"
+        },
+        {
+          "time": "09:16:08",
+          "neso": 537000.0,
+          "hash": "0x13a67b0134c42424853cc020421e51da6885767b394259af827c5b04c7f872c7"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-25",
+      "minted_neso": 575148.67,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 1.35,
+      "est_thb": 45.38,
+      "details": [
+        {
+          "time": "04:26:44",
+          "neso": 120636.35,
+          "hash": "0x9284d43e222728ff2f3313d786c2d5f47f426a01587a0603f3e1f99709859b39"
+        },
+        {
+          "time": "03:40:46",
+          "neso": 33380.36,
+          "hash": "0xaa6ad5726e19dc558bcf95c7984faecef718c92ce89cdc75d6a895ed57cc7d3b"
+        },
+        {
+          "time": "03:21:37",
+          "neso": 48146.07,
+          "hash": "0x474bf23dfae183fdf2e35188e018fed2f399f6703f3198fa76c6f3ca4640ecb8"
+        },
+        {
+          "time": "02:51:36",
+          "neso": 37945.77,
+          "hash": "0xcac4f625aff3b296aad00855f785e276b66acef8dfa290644188d435a6b86634"
+        },
+        {
+          "time": "02:17:37",
+          "neso": 16234.59,
+          "hash": "0xb78c708527b1b62ba84852911b339f69102e7e414c8233844e0014aff176246e"
+        },
+        {
+          "time": "13:57:27",
+          "neso": 318805.53,
+          "hash": "0x4d85d3e7665eec7c348f526d518af35c45ef0643ebae5606d9eda600c05a7a1c"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-23",
+      "minted_neso": 126983.17,
+      "nxpc_usd": 0.234361,
+      "nxpc_thb": 7.89,
+      "est_usd": 0.3,
+      "est_thb": 10.02,
+      "details": [
+        {
+          "time": "02:00:08",
+          "neso": 56881.02,
+          "hash": "0x23f12f4b55e795d2f9c516b76cdde4b26d2588cac925d81be6538ea4e2ee5033"
+        },
+        {
+          "time": "00:41:54",
+          "neso": 70102.15,
+          "hash": "0x4e2a2e14ebfc30a0e5611e2857bd0b846e9e1ec8db8b7b3ca4f528a439fbbb16"
+        }
+      ]
+    }
+  ],
+  "manual_sessions": []
+}

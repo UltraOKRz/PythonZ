@@ -21,3 +21,6 @@ htmlcov/
 .idea/
 Thumbs.db
 Desktop.ini
+
+# Nested clones / redundant folders
+PythonZ/

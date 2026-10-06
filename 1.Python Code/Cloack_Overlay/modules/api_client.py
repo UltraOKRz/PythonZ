@@ -19,18 +19,6 @@ from modules.common import (
 )
 
 class ApiClientMixin:
-    def load_layers_cache(self):
-        """โหลดรายชื่อฟิลด์จาก cache ไฟล์ในเครื่องเพื่อให้เปิดได้ทันที"""
-        if os.path.exists(LAYERS_CACHE_FILE):
-            try:
-                with open(LAYERS_CACHE_FILE, "r", encoding="utf-8") as f:
-                    self.layers_list = json.load(f)
-            except Exception as e:
-                print("Error loading layers cache:", e)
-        # ถ้าไม่มี ให้ไป fetch ใน background
-        if not self.layers_list:
-            threading.Thread(target=self.refresh_layers_from_api, daemon=True).start()
-
     def get_current_api_key(self):
         if not self.api_keys:
             return ""
@@ -40,135 +28,6 @@ class ApiClientMixin:
         if self.api_keys:
             self.current_key_idx = (self.current_key_idx + 1) % len(self.api_keys)
 
-    def refresh_layers_from_api(self):
-        try:
-            key = self.get_current_api_key()
-            url = "https://openapi.msu.io/v1rc1/msn/layers/static"
-            payload = {
-                "layerDescs": [
-                    {
-                        "layerType": "LAYER_TYPE_FIELD"
-                    }
-                ]
-            }
-            req = urllib.request.Request(
-                url,
-                data=json.dumps(payload).encode("utf-8"),
-                headers={
-                    "Content-Type": "application/json",
-                    "x-nxopen-api-key": key,
-                    "User-Agent": "Mozilla/5.0"
-                },
-                method="POST"
-            )
-            with urllib.request.urlopen(req, timeout=8) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-            static_datas = data.get("data", {}).get("staticDatas", [])
-            fields = []
-            for d in static_datas:
-                if d.get("layerType") == "LAYER_TYPE_FIELD":
-                    f_info = d.get("field", {})
-                    fields.append({
-                        "layerId": d.get("layerId"),
-                        "layerName": f_info.get("layerName", f"Field #{d.get('layerId')}"),
-                        "groupName": f_info.get("groupName", ""),
-                        "minLevel": f_info.get("minRecommendedLevel", 0),
-                        "maxLevel": f_info.get("maxRecommendedLevel", 0)
-                    })
-            if fields:
-                self.layers_list = fields
-                with open(LAYERS_CACHE_FILE, "w", encoding="utf-8") as f:
-                    json.dump(fields, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print("Failed to refresh layers:", e)
-
-    def get_zone_icon(self, map_name, size_h=24):
-        """ค้นหาและดึงรูป Zone/Town Icon จาก cache หรือ CDN"""
-        if not map_name:
-            return None
-            
-        target_url = None
-        zone_key = None
-        
-        # 1. เทียบจาก ZONE_ICONS_MAP
-        for k, url in ZONE_ICONS_MAP.items():
-            if k.lower() in map_name.lower() or map_name.lower() in k.lower():
-                target_url = url
-                zone_key = k.replace(" ", "_")
-                break
-                
-        # 2. ถ้าไม่เจอ ลองหาไฟล์ใน ICONS_CACHE_DIR ตรงๆ
-        if not zone_key:
-            clean_name = re.sub(r'[^a-zA-Z0-9_]', '', map_name.replace(" ", "_"))
-            if os.path.exists(ICONS_CACHE_DIR):
-                for f in os.listdir(ICONS_CACHE_DIR):
-                    if f.lower().endswith(".png") and clean_name.lower() in f.lower():
-                        zone_key = f[:-4]
-                        break
-                        
-        if not zone_key:
-            if "เมือง" in map_name or "town" in map_name.lower():
-                zone_key = "Default_Town"
-            else:
-                return None
-            
-        cache_id = f"{zone_key}_{size_h}"
-        if cache_id in self.zone_photo_cache:
-            return self.zone_photo_cache[cache_id]
-            
-        cache_path = os.path.join(ICONS_CACHE_DIR, f"{zone_key}.png")
-        if os.path.exists(cache_path):
-            try:
-                img = Image.open(cache_path)
-                orig_w, orig_h = img.size
-                ratio = float(size_h) / orig_h if orig_h > 0 else 1.0
-                new_w = max(size_h, int(orig_w * ratio))
-                img = img.resize((new_w, size_h), Image.Resampling.LANCZOS)
-                photo = ImageTk.PhotoImage(img)
-                self.zone_photo_cache[cache_id] = photo
-                return photo
-            except Exception:
-                pass
-                
-        # ถ้ายังไม่มีรูปในเครื่อง ดาวน์โหลดใน Background Thread
-        if target_url:
-            threading.Thread(target=self._download_icon_async, args=(target_url, cache_path, zone_key), daemon=True).start()
-        return None
-
-    def _download_icon_async(self, url, save_path, zone_key):
-        try:
-            req = urllib.request.Request(
-                url, 
-                headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-            )
-            with urllib.request.urlopen(req, timeout=6) as resp:
-                data = resp.read()
-                with open(save_path, "wb") as f:
-                    f.write(data)
-            def refresh_ui():
-                if getattr(self, 'root', None) is not None and self.root.winfo_exists():
-                    self.setup_ui_elements()
-            self.root.after(0, refresh_ui)
-        except Exception:
-            pass
-
-    def get_neso_coin_photo(self, size=30):
-        cache_id = f"neso_coin_{size}"
-        if not hasattr(self, 'zone_photo_cache'):
-            self.zone_photo_cache = {}
-        if cache_id in self.zone_photo_cache:
-            return self.zone_photo_cache[cache_id]
-        coin_path = os.path.join(ICONS_CACHE_DIR, "neso_coin.png")
-        if os.path.exists(coin_path):
-            try:
-                img = Image.open(coin_path)
-                img = img.resize((size, size), Image.Resampling.LANCZOS)
-                photo = ImageTk.PhotoImage(img)
-                self.zone_photo_cache[cache_id] = photo
-                return photo
-            except Exception:
-                pass
-        return None
 
     def fetch_drop_data_async(self):
         """ส่งคำขอไปยัง Official MSU OpenAPI เพื่อดึง % ดรอปและยอดกระเป๋าแบบ Background Thread"""
@@ -214,6 +73,7 @@ class ApiClientMixin:
             if res.get("success"):
                 onchain_raw = res.get("data", {}).get("onchainNeso", "0")
                 onchain_val = int(onchain_raw) / (10**18)
+                self.wallet_neso_val = float(onchain_val)
                 self.wallet_neso_str = f"{onchain_val:,.1f}"
                 self.wallet_neso_compact = format_compact_number(onchain_val)
                 
@@ -251,7 +111,7 @@ class ApiClientMixin:
             w_id = getattr(self, 'world_id', 0)
             url = f"https://openapi.msu.io/v1rc1/msn/rewards/{w_id}"
 
-            # รวบรวม Layers ในโซนเดียวกันทั้งหมดเพื่อหาแมพแนะนำ
+            # รวบรวม Layers สำหรับคำนวณและหาแมพแนะนำ
             curr_item = next((it for it in self.layers_list if it.get("layerId") == self.selected_layer_id), None)
             if curr_item and curr_item.get("groupName"):
                 self.selected_group_name = curr_item.get("groupName")
@@ -260,15 +120,44 @@ class ApiClientMixin:
             if self.selected_layer_id:
                 all_query_layers.append(int(self.selected_layer_id))
 
-            if self.selected_group_name:
+            # 🎯 ดึงเลเวลตัวละครมาคำนวณช่วงเลเวลแนะนำ (+20 เวล, -20 เวล ปัดเลขกลมๆ ลงท้ายด้วย 0)
+            char_lv = 0
+            try:
+                char_lv = int(getattr(self, 'current_char_level', 0) or 0)
+            except:
+                char_lv = 0
+
+            target_level_layers = []
+            if char_lv > 0:
+                # ตัวอย่าง: Lv. 222 -> min = (222 - 20) // 10 * 10 = 200, max = (222 + 20) // 10 * 10 = 240
+                min_target_lv = max(10, ((char_lv - 20) // 10) * 10)
+                max_target_lv = ((char_lv + 20) // 10) * 10
+
+                for it in self.layers_list:
+                    l_min = it.get("minLevel", 0)
+                    l_max = it.get("maxLevel", 0)
+                    # ตรวจสอบว่าช่วงเลเวลของ Layer ทับซ้อนกับช่วงแนะนำหรือไม่
+                    if l_max >= min_target_lv and l_min <= max_target_lv:
+                        lid = int(it["layerId"])
+                        if lid not in target_level_layers:
+                            target_level_layers.append(lid)
+
+            self.target_recommend_level_layers = target_level_layers
+
+            # เพิ่ม Layers จากช่วงเลเวล หรือ fallback ไปโซนเดียวกันถ้าไม่มีข้อมูลเลเวล
+            if target_level_layers:
+                for lid in target_level_layers:
+                    if lid not in all_query_layers:
+                        all_query_layers.append(lid)
+            elif self.selected_group_name:
                 zone_layers = [it for it in self.layers_list if it.get("groupName") == self.selected_group_name]
                 for zl in zone_layers:
                     lid = int(zl["layerId"])
                     if lid not in all_query_layers:
                         all_query_layers.append(lid)
 
-            # จำกัดไม่เกิน 15 layers เพื่อประสิทธิภาพ
-            all_query_layers = all_query_layers[:15]
+            # ให้แมพปัจจุบันอยู่ต้นๆ เสมอ และจำกัดจำนวน query เพื่อประสิทธิภาพ
+            all_query_layers = all_query_layers[:25]
 
             payload = {
                 "layerDescs": [{"layerId": lid} for lid in all_query_layers]
@@ -417,28 +306,84 @@ class ApiClientMixin:
                 self.has_no_drop = True
                 self.last_update_str = datetime.now().strftime("%H:%M:%S")
 
-            # ค้นหาแมพแนะนำในโซนที่มี % Boost สูงสุด (สำหรับโชว์ในกรอบแนะนำเท่านั้น ไม่เกี่ยวกับตารางคำนวณหลัก)
+            # 🎯 ค้นหาแมพแนะนำในช่วงเลเวลตัวละครที่มีผลดรอป (% Boost หรือ Expected Drop) สูงสุด
             if res and res.get("success"):
-                best_rate = -1.0
+                best_score = -1.0
                 best_map_obj = None
+                target_lids = getattr(self, 'target_recommend_level_layers', [])
+
                 for r_info in reward_infos:
                     f_info = r_info.get("fieldInformation", {})
                     lid = f_info.get("layerId")
                     if lid:
+                        # ถ้ามีช่วงเลเวลตัวละคร ให้พิจารณาแมพในช่วงเลเวลก่อน
+                        if target_lids and (lid not in target_lids):
+                            continue
+
                         for itm in f_info.get("items", []):
                             if itm.get("key", {}).get("itemId") == 1 and itm.get("enableBoostOption", False):
                                 b_rate = _to_f(itm.get("dropProb", {}).get("value", 0))
                                 b_stk = _to_f(itm.get("currentStock", {}).get("value", 0))
-                                if b_rate > best_rate:
+                                b_min_qty = _to_f(itm.get("dropQuantityMin", {}).get("value", 0))
+                                b_max_qty = _to_f(itm.get("dropQuantityMax", {}).get("value", 0))
+                                b_exp_min = (b_rate / 100.0) * b_min_qty
+                                b_exp_max = (b_rate / 100.0) * b_max_qty
+
+                                # เปรียบเทียบผลลัพธ์การดรอป (คำนวณจาก Expected Drop สูงสุดเป็นหลัก หากเท่ากันดูที่ % เรต)
+                                score = b_exp_max if b_exp_max > 0 else (b_rate / 10.0)
+                                if score > best_score:
                                     layer_meta = next((l for l in self.layers_list if l["layerId"] == lid), None)
                                     lname = layer_meta.get("layerName", f"Field #{lid}") if layer_meta else f"Field #{lid}"
-                                    best_rate = b_rate
+                                    best_score = score
+
+                                    if b_exp_max > 0:
+                                        b_qty_txt = f"{b_exp_min:.2f} ~ {b_exp_max:.2f} N"
+                                    else:
+                                        b_qty_txt = "-- N"
+
                                     best_map_obj = {
                                         "layerId": lid,
                                         "layerName": lname,
                                         "rate": b_rate,
-                                        "stock": b_stk
+                                        "stock": b_stk,
+                                        "min_qty": b_min_qty,
+                                        "max_qty": b_max_qty,
+                                        "exp_min": b_exp_min,
+                                        "exp_max": b_exp_max,
+                                        "qty_txt": b_qty_txt
                                     }
+
+                # Fallback: ถ้าในช่วงเลเวลไม่พบ ให้หาจากโซนที่ยืน
+                if not best_map_obj and reward_infos:
+                    for r_info in reward_infos:
+                        f_info = r_info.get("fieldInformation", {})
+                        lid = f_info.get("layerId")
+                        if lid:
+                            for itm in f_info.get("items", []):
+                                if itm.get("key", {}).get("itemId") == 1 and itm.get("enableBoostOption", False):
+                                    b_rate = _to_f(itm.get("dropProb", {}).get("value", 0))
+                                    b_stk = _to_f(itm.get("currentStock", {}).get("value", 0))
+                                    b_min_qty = _to_f(itm.get("dropQuantityMin", {}).get("value", 0))
+                                    b_max_qty = _to_f(itm.get("dropQuantityMax", {}).get("value", 0))
+                                    b_exp_min = (b_rate / 100.0) * b_min_qty
+                                    b_exp_max = (b_rate / 100.0) * b_max_qty
+                                    score = b_exp_max if b_exp_max > 0 else (b_rate / 10.0)
+                                    if score > best_score:
+                                        layer_meta = next((l for l in self.layers_list if l["layerId"] == lid), None)
+                                        lname = layer_meta.get("layerName", f"Field #{lid}") if layer_meta else f"Field #{lid}"
+                                        best_score = score
+                                        best_map_obj = {
+                                            "layerId": lid,
+                                            "layerName": lname,
+                                            "rate": b_rate,
+                                            "stock": b_stk,
+                                            "min_qty": b_min_qty,
+                                            "max_qty": b_max_qty,
+                                            "exp_min": b_exp_min,
+                                            "exp_max": b_exp_max,
+                                            "qty_txt": f"{b_exp_min:.2f} ~ {b_exp_max:.2f} N" if b_exp_max > 0 else "-- N"
+                                        }
+
                 self.best_zone_map = best_map_obj
                 if self.best_zone_map:
                     now_ts = time.time()
@@ -447,7 +392,7 @@ class ApiClientMixin:
                     if (now_ts - last_log_ts >= 15) or (last_logged_lid != self.best_zone_map['layerId']):
                         self.last_hot_log_ts = now_ts
                         self.last_hot_logged_lid = self.best_zone_map['layerId']
-                        self.log_cmd(f"🔥 แนะนำในโซน: {self.best_zone_map['layerName']} ({self.best_zone_map['rate']:.1f}%)")
+                        self.log_cmd(f"🔥 แนะนำ: {self.best_zone_map['layerName']} ({self.best_zone_map['rate']:.1f}%)")
             else:
                 self.best_zone_map = None
 

@@ -1,12 +1,12 @@
 {
-    "pos_x": 0,
-    "pos_y": 14,
-    "full_w": 165,
-    "full_h": 554,
+    "pos_x": 655,
+    "pos_y": 57,
+    "full_w": 201,
+    "full_h": 670,
     "v2_w": 252,
     "v2_h": 519,
-    "sidebar_w": 165,
-    "sidebar_h": 554,
+    "sidebar_w": 201,
+    "sidebar_h": 670,
     "mini_w": 460,
     "mini_h": 64,
     "custom_font_size": 7,
@@ -14,48 +14,48 @@
     "sound_enabled": true,
     "mode": "ServerTime",
     "server_name": "Fang",
-    "selected_layer_id": 122005,
-    "selected_layer_name": "Scrapyard, Black Heaven Inside 1",
-    "selected_group_name": "Lv. 200 ~ 219",
+    "selected_layer_id": 132001,
+    "selected_layer_name": "Lachelein Alley",
+    "selected_group_name": "Arc. 190 ~ 240",
     "is_pinned": false,
     "is_mini": false,
     "is_compact_folded": true,
     "wallet_addr": "0x69ca1eA12Be04DAFD27FB9164CB802878e846d16",
     "custom_ocr_region": {
-        "x": 604,
-        "y": 184,
-        "w": 139,
-        "h": 118,
+        "x": 54,
+        "y": 50,
+        "w": 177,
+        "h": 33,
         "abs": [
-            619,
-            155,
-            758,
-            273
+            48,
+            39,
+            225,
+            72
         ],
-        "icon_w": 50,
+        "icon_w": 0,
         "red_box": [
-            52,
             2,
-            137,
-            58
+            2,
+            175,
+            13
         ],
         "blue_box": [
-            52,
-            60,
-            137,
-            116
+            2,
+            15,
+            175,
+            31
         ]
     },
     "custom_char_ocr_region": {
-        "x": 579,
-        "y": 674,
-        "w": 84,
-        "h": 18,
+        "x": 598,
+        "y": 673,
+        "w": 50,
+        "h": 22,
         "abs": [
-            975,
-            700,
-            1059,
-            718
+            592,
+            662,
+            642,
+            684
         ]
     },
     "current_char_name": "LuZion",

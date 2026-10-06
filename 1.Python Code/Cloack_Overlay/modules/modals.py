@@ -205,21 +205,24 @@ class ModalsMixin:
         cur_w = self.win_bg.winfo_width()
         cur_h = self.win_bg.winfo_height()
 
-        p_w = max(240, cur_w)
-        p_h = 96
-        # วางต่อใต้หน้าต่างหลัก หรือวางข้างๆ ถ้าติดขอบล่าง
-        screen_h = self.win_bg.winfo_screenheight()
-        if cur_y + cur_h + p_h + 10 <= screen_h:
-            p_x = cur_x
-            p_y = cur_y + cur_h + 4
+        # ขนาดเท่ากับเมนูตั้งค่าเป๊ะๆ (290x420) ตามคำสั่ง เพื่อรองรับการยัดโมดูลเพิ่มในอนาคต
+        p_w = 290
+        p_h = 420
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+
+        # วางด้านขวาของหน้าต่างหลัก หรือวางด้านซ้ายถ้าจอขวาเต็ม
+        if cur_x + cur_w + p_w + 12 <= screen_w:
+            p_x = cur_x + cur_w + 8
+            p_y = cur_y
         else:
-            p_x = max(10, cur_x - p_w - 6) if cur_x > p_w else cur_x + cur_w + 6
-            p_y = max(10, cur_y + cur_h - p_h)
+            p_x = max(10, cur_x - p_w - 8)
+            p_y = cur_y
 
         self.bottom_panel_win = tk.Toplevel(self.root)
         self.bottom_panel_win.title("เมนูควบคุมล่าง (Bottom Menu)")
         self.bottom_panel_win.geometry(f"{p_w}x{p_h}+{p_x}+{p_y}")
-        self.bottom_panel_win.config(bg="#1c1111", highlightbackground="#ef4444", highlightthickness=1)
+        self.bottom_panel_win.config(bg="#121721", highlightbackground="#00f2fe", highlightthickness=1)
         self.bottom_panel_win.attributes("-topmost", True)
         self.bottom_panel_win.overrideredirect(True)
 
@@ -234,14 +237,14 @@ class ModalsMixin:
         self.bottom_panel_win.bind("<ButtonPress-1>", start_drag_bp)
         self.bottom_panel_win.bind("<B1-Motion>", do_drag_bp)
 
-        # Header ของหน้าต่างแยก
-        hdr = tk.Frame(self.bottom_panel_win, bg="#2a1616")
+        # Header ของหน้าต่างแยก (คุมโทนเดียวกับ Settings)
+        hdr = tk.Frame(self.bottom_panel_win, bg="#1a2230")
         hdr.pack(fill=tk.X)
         hdr.bind("<ButtonPress-1>", start_drag_bp)
         hdr.bind("<B1-Motion>", do_drag_bp)
 
-        lbl_t = tk.Label(hdr, text="▲ เมนูแถบล่าง (ควบคุม)", font=("Segoe UI", 8, "bold"), fg="#fca5a5", bg="#2a1616")
-        lbl_t.pack(side=tk.LEFT, padx=6, pady=2)
+        lbl_t = tk.Label(hdr, text="▲ เมนูแถบล่าง (ควบคุมและโมดูล)", font=("Segoe UI", 9, "bold"), fg="#38bdf8", bg="#1a2230")
+        lbl_t.pack(side=tk.LEFT, padx=8, pady=4)
         lbl_t.bind("<ButtonPress-1>", start_drag_bp)
         lbl_t.bind("<B1-Motion>", do_drag_bp)
 
@@ -252,73 +255,105 @@ class ModalsMixin:
             if hasattr(self, 'btn_bottom_menu') and self.btn_bottom_menu.winfo_exists():
                 self.btn_bottom_menu.config(bg="#182230", fg="#38bdf8")
 
-        btn_x = tk.Label(hdr, text="✕", font=("Segoe UI", 8, "bold"), fg="#ff4d4f", bg="#2a1616", cursor="hand2", padx=4)
-        btn_x.pack(side=tk.RIGHT, padx=4, pady=2)
+        btn_x = tk.Label(hdr, text="✕", font=("Segoe UI", 9, "bold"), fg="#ff4d4f", bg="#1a2230", cursor="hand2", padx=6)
+        btn_x.pack(side=tk.RIGHT, padx=4, pady=4)
         btn_x.bind("<Button-1>", lambda e: _close_bp())
 
         # ชั้นบน: Real Time, Server Ping, NXPC Price
-        row1 = tk.Frame(self.bottom_panel_win, bg="#1c1111")
-        row1.pack(fill=tk.X, padx=6, pady=(4, 2))
+        row1 = tk.Frame(self.bottom_panel_win, bg="#121721")
+        row1.pack(fill=tk.X, padx=8, pady=(6, 3))
 
-        self.lbl_real_time = tk.Label(row1, text="00:00:00", font=("Consolas", 10, "bold"), fg="#38bdf8", bg="#1c1111")
-        self.lbl_real_time.pack(side=tk.LEFT)
+        self.lbl_bp_real_time = tk.Label(row1, text="00:00:00", font=("Consolas", 11, "bold"), fg="#38bdf8", bg="#121721")
+        self.lbl_bp_real_time.pack(side=tk.LEFT)
 
-        self.lbl_ping = tk.Label(row1, text="?? ms", font=("Consolas", 7, "bold"), fg="#94a3b8", bg="#1c1111", cursor="hand2")
-        self.lbl_ping.pack(side=tk.RIGHT)
-        self.lbl_ping.bind("<Button-1>", lambda e: self.reset_api_counter())
+        self.lbl_bp_ping = tk.Label(row1, text="?? ms", font=("Consolas", 8, "bold"), fg="#94a3b8", bg="#121721", cursor="hand2")
+        self.lbl_bp_ping.pack(side=tk.RIGHT)
+        self.lbl_bp_ping.bind("<Button-1>", lambda e: self.reset_api_counter())
 
-        tk.Label(row1, text="|", font=("Consolas", 7), fg="#4b5563", bg="#1c1111").pack(side=tk.RIGHT, padx=2)
+        tk.Label(row1, text="|", font=("Consolas", 8), fg="#4b5563", bg="#121721").pack(side=tk.RIGHT, padx=3)
 
-        self.lbl_nxpc = tk.Label(row1, text="NXPC: $--", font=("Consolas", 7, "bold"), fg="#f59e0b", bg="#1c1111", cursor="hand2")
-        self.lbl_nxpc.pack(side=tk.RIGHT)
-        self.lbl_nxpc.bind("<Button-1>", lambda e: self.toggle_nxpc_currency())
+        self.lbl_bp_nxpc = tk.Label(row1, text="NXPC: $--", font=("Consolas", 8, "bold"), fg="#f59e0b", bg="#121721", cursor="hand2")
+        self.lbl_bp_nxpc.pack(side=tk.RIGHT)
+        self.lbl_bp_nxpc.bind("<Button-1>", lambda e: self.toggle_nxpc_currency())
         self._update_nxpc_label()
 
         # ชั้นกลาง: Scan Map Button
-        row2 = tk.Frame(self.bottom_panel_win, bg="#1c1111")
-        row2.pack(fill=tk.X, padx=6, pady=2)
+        row2 = tk.Frame(self.bottom_panel_win, bg="#121721")
+        row2.pack(fill=tk.X, padx=8, pady=3)
 
         f_left_btn = tk.Frame(row2, bg="#16202c", bd=1, relief="solid")
         f_left_btn.pack(fill=tk.X)
 
-        self.btn_ocr = tk.Label(f_left_btn, text="Scan Map", font=("Segoe UI", 7, "bold"), fg="#38bdf8", bg="#16202c", cursor="hand2", padx=8, pady=3)
+        self.btn_ocr = tk.Label(f_left_btn, text="Scan Map", font=("Segoe UI", 8, "bold"), fg="#38bdf8", bg="#16202c", cursor="hand2", padx=8, pady=4)
         self.btn_ocr.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.btn_ocr.bind("<Button-1>", lambda e: self.trigger_scan_and_refresh())
 
-        self.btn_ocr_cfg = tk.Label(f_left_btn, text="✂️", font=("Segoe UI", 7, "bold"), fg="#f472b6", bg="#231728", cursor="hand2", padx=6, pady=3)
+        self.btn_ocr_cfg = tk.Label(f_left_btn, text="✂️", font=("Segoe UI", 8, "bold"), fg="#f472b6", bg="#231728", cursor="hand2", padx=8, pady=4)
         self.btn_ocr_cfg.pack(side=tk.RIGHT, fill=tk.Y)
         self.btn_ocr_cfg.bind("<Button-1>", lambda e: self.open_ocr_crop_tool())
 
         # ชั้นล่างสุด: Scout, Reset/Refresh, Pin, Sound
-        row3 = tk.Frame(self.bottom_panel_win, bg="#1c1111")
-        row3.pack(fill=tk.X, padx=6, pady=(3, 4))
+        row3 = tk.Frame(self.bottom_panel_win, bg="#121721")
+        row3.pack(fill=tk.X, padx=8, pady=(3, 6))
 
-        btn_rst = tk.Label(row3, text="🔄 Refresh", font=("Segoe UI", 7, "bold"), fg="#38ef7d", bg="#182230", cursor="hand2", padx=4, pady=1)
-        btn_rst.pack(side=tk.LEFT, padx=(0, 2))
+        btn_rst = tk.Label(row3, text="🔄 Refresh", font=("Segoe UI", 8, "bold"), fg="#38ef7d", bg="#182230", cursor="hand2", padx=6, pady=2)
+        btn_rst.pack(side=tk.LEFT, padx=(0, 4))
         btn_rst.bind("<Button-1>", lambda e: [self.reset_manual_timer() if self.mode == "Manual" else None, self.trigger_scan_and_refresh()])
 
         pin_col = "#38ef7d" if self.is_pinned else "#64748b"
-        btn_pin = tk.Label(row3, text="📌", font=("Segoe UI", 7), fg=pin_col, bg="#182230", cursor="hand2", padx=3, pady=1)
-        btn_pin.pack(side=tk.LEFT, padx=1)
+        btn_pin = tk.Label(row3, text="📌", font=("Segoe UI", 8), fg=pin_col, bg="#182230", cursor="hand2", padx=4, pady=2)
+        btn_pin.pack(side=tk.LEFT, padx=2)
         btn_pin.bind("<Button-1>", lambda e: self.toggle_pin())
 
         snd_col = "#38ef7d" if self.sound_enabled else "#64748b"
         snd_icon = "🔊" if self.sound_enabled else "🔇"
-        btn_snd = tk.Label(row3, text=snd_icon, font=("Segoe UI", 7), fg=snd_col, bg="#182230", cursor="hand2", padx=3, pady=1)
-        btn_snd.pack(side=tk.LEFT, padx=1)
+        btn_snd = tk.Label(row3, text=snd_icon, font=("Segoe UI", 8), fg=snd_col, bg="#182230", cursor="hand2", padx=4, pady=2)
+        btn_snd.pack(side=tk.LEFT, padx=2)
         btn_snd.bind("<Button-1>", lambda e: self.toggle_sound())
 
-        btn_scout = tk.Label(row3, text="🎒 Scout", font=("Segoe UI", 7, "bold"), fg="#00f2fe", bg="#182230", cursor="hand2", padx=5, pady=1)
+        btn_scout = tk.Label(row3, text="🎒 Scout", font=("Segoe UI", 8, "bold"), fg="#00f2fe", bg="#182230", cursor="hand2", padx=6, pady=2)
         btn_scout.pack(side=tk.RIGHT)
         btn_scout.bind("<Button-1>", lambda e: self.open_wallet_explorer())
 
-        self.lbl_poll_countdown = tk.Label(row3, text="🔄 60s", font=("Segoe UI", 7, "bold"), fg="#94a3b8", bg="#1c1111", cursor="hand2")
+        self.lbl_poll_countdown = tk.Label(row3, text="🔄 60s", font=("Segoe UI", 8, "bold"), fg="#94a3b8", bg="#121721", cursor="hand2")
         self.lbl_poll_countdown.pack(side=tk.RIGHT, padx=4)
         self.lbl_poll_countdown.bind("<Button-1>", lambda e: self.trigger_scan_and_refresh())
 
+        # 📦 พื้นที่วางปุ่มโมดูลเสริม (Mod Button Bar - เรียงจากซ้ายไปขวา)
+        f_modules = tk.Frame(self.bottom_panel_win, bg="#0d1117", bd=1, relief="solid", highlightbackground="#1e293b", highlightthickness=1)
+        f_modules.pack(fill=tk.BOTH, expand=True, padx=8, pady=(2, 8))
+        self.f_bottom_modules = f_modules
+
+        # แถวสำหรับวางปุ่มโมดูลต่างๆ (Pack จาก LEFT เรียงจากซ้ายไปขวา ค่อยๆ เพิ่มทีละตัว)
+        f_mod_btns = tk.Frame(f_modules, bg="#0d1117")
+        f_mod_btns.pack(fill=tk.X, padx=4, pady=4, anchor="nw")
+        self.f_mod_btns = f_mod_btns
+
+        # 📊 Mod 1: Farm Income Tracker (หน้าต่างแยก 177x252 px)
+        btn_mod_income = tk.Label(f_mod_btns, text=" 📊 Income Tracker ", font=("Segoe UI", 7, "bold"),
+                                  fg="#38ef7d", bg="#182230", relief="solid", bd=1,
+                                  highlightbackground="#22c55e", highlightthickness=1,
+                                  cursor="hand2", padx=6, pady=4)
+        btn_mod_income.pack(side=tk.LEFT, padx=(0, 4))
+        btn_mod_income.bind("<Button-1>", lambda e: self.open_income_tracker_mod())
+
         if hasattr(self, 'btn_bottom_menu') and self.btn_bottom_menu.winfo_exists():
-            self.btn_bottom_menu.config(bg="#3b1111", fg="#fca5a5")
+            self.btn_bottom_menu.config(bg="#00f2fe", fg="#000000")
         self.bottom_panel_win.lift()
+
+    def open_income_tracker_mod(self):
+        """เปิด/ปิด หน้าต่างโมดูล Farm Income Tracker (ขนาด 177x252 px)"""
+        if not hasattr(self, '_income_tracker_mod') or self._income_tracker_mod is None:
+            try:
+                from Mod.income_tracker import IncomeTrackerMod
+                self._income_tracker_mod = IncomeTrackerMod(self)
+            except Exception as e:
+                print("Failed to load IncomeTrackerMod:", e)
+                if hasattr(self, 'log_cmd'):
+                    self.log_cmd(f"⚠️ โหลด Mod ไม่สำเร็จ: {e}")
+                return
+        
+        self._income_tracker_mod.toggle_window()
 
     # -------------------------------------------------------------
     # 🗺️ หน้าต่างเลือกแมพ / ฟิลด์ (Map Picker Window)

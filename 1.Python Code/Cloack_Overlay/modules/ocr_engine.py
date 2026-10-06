@@ -71,24 +71,27 @@ class OcrEngineMixin:
 
         reg = getattr(self, 'custom_ocr_region', None)
         if isinstance(reg, dict):
-            if game_rect:
+            abs_c = reg.get('abs', None)
+            if abs_c and len(abs_c) == 4 and abs_c[2] > abs_c[0] and abs_c[3] > abs_c[1]:
+                # ถ้าเคยบันทึกพิกัดหน้าจอแน่นอน (abs) ไว้ ให้ใช้ตำแหน่งเดิมที่ผู้ใช้ตั้งไว้ตรงจุดเป๊ะๆ
+                box_x1, box_y1 = abs_c[0], abs_c[1]
+                box_w = abs_c[2] - abs_c[0]
+                box_h = abs_c[3] - abs_c[1]
+            elif game_rect and 'x' in reg and 'y' in reg:
                 box_x1 = game_rect[0] + reg.get('x', 8)
                 box_y1 = game_rect[1] + reg.get('y', 32)
+                box_w = reg.get('w', def_w)
+                box_h = reg.get('h', def_h)
             else:
-                abs_c = reg.get('abs', None)
-                if abs_c and len(abs_c) == 4:
-                    box_x1, box_y1 = abs_c[0], abs_c[1]
-                else:
-                    box_x1 = reg.get('x', def_x1)
-                    box_y1 = reg.get('y', def_y1)
-            box_w = reg.get('w', def_w)
-            box_h = reg.get('h', def_h)
+                box_x1 = reg.get('x', def_x1)
+                box_y1 = reg.get('y', def_y1)
+                box_w = reg.get('w', def_w)
+                box_h = reg.get('h', def_h)
+
             box_x2 = box_x1 + box_w
             box_y2 = box_y1 + box_h
             
-            # เส้นแบ่งไอคอนและเส้นแบ่งกลาง
-            icon_w_saved = reg.get('icon_w', min(50, max(32, int(box_h * 0.5))))
-            box_icon_x = box_x1 + icon_w_saved
+            # เส้นแบ่งกลาง
             red_box = reg.get('red_box')
             if red_box and len(red_box) == 4:
                 box_mid_y = box_y1 + red_box[3]
@@ -99,16 +102,14 @@ class OcrEngineMixin:
             box_y1 = def_y1
             box_x2 = def_x1 + def_w
             box_y2 = def_y1 + def_h
-            box_icon_x = box_x1 + 44
             box_mid_y = box_y1 + (def_h // 2)
 
-        # ป้องกันค่าเพี้ยนออกนอกจอ
-        box_x1 = max(0, min(box_x1, sw - 100))
-        box_y1 = max(60, min(box_y1, sh - 60))
-        box_x2 = max(box_x1 + 60, min(box_x2, sw - 10))
-        box_y2 = max(box_y1 + 40, min(box_y2, sh - 10))
-        box_icon_x = max(box_x1 + 20, min(box_icon_x, box_x2 - 30))
-        box_mid_y = max(box_y1 + 15, min(box_mid_y, box_y2 - 15))
+        # ป้องกันค่าเพี้ยนออกนอกจอ (ให้ y1 ขึ้นได้ถึง 0 เพื่อไม่ให้ดันกรอบตกขอบ)
+        box_x1 = max(0, min(box_x1, sw - 50))
+        box_y1 = max(0, min(box_y1, sh - 40))
+        box_x2 = max(box_x1 + 30, min(box_x2, sw))
+        box_y2 = max(box_y1 + 20, min(box_y2, sh))
+        box_mid_y = max(box_y1 + 5, min(box_mid_y, box_y2 - 5))
 
         active_drag = None
         drag_start_x = 0
@@ -121,40 +122,33 @@ class OcrEngineMixin:
             w = box_x2 - box_x1
             h = box_y2 - box_y1
 
-            # 🟡 1. Master Header Frame (กรอบเหลือง)
-            canvas.create_rectangle(box_x1, box_y1, box_x2, box_y2, outline="#facc15", width=2, tags="guidelines")
+            # 🟡 1. Master Header Frame (กรอบเหลือง นอกสุด)
+            canvas.create_rectangle(box_x1, box_y1, box_x2, box_y2, outline="#facc15", width=1.5, tags="guidelines")
             # 🟢 หมุดตั้งต้นมุมบนซ้าย
-            canvas.create_rectangle(box_x1 - 2, box_y1 - 2, box_x1 + 12, box_y1 + 12, fill="#22c55e", outline="#ffffff", width=1, tags="guidelines")
+            canvas.create_rectangle(box_x1 - 2, box_y1 - 2, box_x1 + 8, box_y1 + 8, fill="#22c55e", outline="#ffffff", width=1, tags="guidelines")
 
-            # 🔘 2. กล่องไอคอนด้านซ้าย (Icon Box)
-            canvas.create_rectangle(box_x1 + 2, box_y1 + 2, box_icon_x - 1, box_y2 - 2, outline="#eab308", width=1, dash=(3, 2), tags="guidelines")
-            canvas.create_text(box_x1 + ((box_icon_x - box_x1) // 2), box_y1 + (h // 2), text="Icon", fill="#cbd5e1", font=("Segoe UI", 9, "bold"), tags="guidelines")
+            # 🔴 2. กล่องสีแดง (Main Zone แถวบน) เส้นบาง ไม่บังตัวหนังสือเกม
+            canvas.create_rectangle(box_x1 + 1, box_y1 + 1, box_x2 - 1, box_mid_y, outline="#ef4444", width=1, tags="guidelines")
 
-            # 🔴 3. กล่องสีแดง (Main Zone แถวบน เช่น Scrapyard)
-            canvas.create_rectangle(box_icon_x + 2, box_y1 + 2, box_x2 - 2, box_mid_y - 1, outline="#ef4444", width=2, tags="guidelines")
-            canvas.create_text(box_icon_x + 6, box_y1 + 3, text="🔴 Main Zone (โซนใหญ่)", fill="#ef4444", font=("Segoe UI", 8, "bold"), anchor="nw", tags="guidelines")
+            # 🔵 3. กล่องสีฟ้า (Sub Map แถวล่าง) เส้นบาง ไม่บังตัวหนังสือเกม
+            canvas.create_rectangle(box_x1 + 1, box_mid_y, box_x2 - 1, box_y2 - 1, outline="#00e5ff", width=1, tags="guidelines")
 
-            # 🔵 4. กล่องสีฟ้า (Sub Map แถวล่าง เช่น Scrapyard Entrance)
-            canvas.create_rectangle(box_icon_x + 2, box_mid_y + 1, box_x2 - 2, box_y2 - 2, outline="#38bdf8", width=2, tags="guidelines")
-            canvas.create_text(box_icon_x + 6, box_mid_y + 3, text="🔵 Sub Map (จุดยืนจริง)", fill="#38bdf8", font=("Segoe UI", 8, "bold"), anchor="nw", tags="guidelines")
+            # ↕️ 4. เส้นแบ่งกลาง (Mid Line Handle - ปรับระดับแบ่งแถว 1 กับ 2)
+            canvas.create_line(box_x1 + 1, box_mid_y, box_x2 - 1, box_mid_y, fill="#ffffff", width=1, dash=(3, 2), tags="guidelines")
+            canvas.create_oval(box_x2 - 8, box_mid_y - 4, box_x2, box_mid_y + 4, fill="#00e5ff", outline="#ffffff", width=1, tags="guidelines")
 
-            # ↕️ 5. เส้นแบ่งกลาง (Mid Line Handle - ปรับระดับแบ่งแถว 1 กับ 2)
-            canvas.create_line(box_icon_x, box_mid_y, box_x2, box_mid_y, fill="#ffffff", width=2, dash=(4, 2), tags="guidelines")
-            canvas.create_oval(box_x2 - 12, box_mid_y - 4, box_x2 - 4, box_mid_y + 4, fill="#ffffff", outline="#0284c7", tags="guidelines")
-
-            # ↔️ 6. เส้นแบ่งไอคอน (Icon Line Handle)
-            canvas.create_line(box_icon_x, box_y1, box_icon_x, box_y2, fill="#eab308", width=2, dash=(4, 2), tags="guidelines")
-            canvas.create_oval(box_icon_x - 4, box_y1 + 4, box_icon_x + 4, box_y1 + 12, fill="#eab308", outline="#ffffff", tags="guidelines")
-
-            # 📏 ป้ายบอกขนาดและคำแนะนำ
-            canvas.create_text(box_x1, max(50, box_y1 - 18), text=f"📍 Master Header: {w}x{h} px | ลากเส้นบน-ล่าง-กลาง เพื่อจัดระดับ", 
-                               fill="#facc15", font=("Segoe UI", 10, "bold"), anchor="nw", tags="guidelines")
+            # 📏 ป้ายบอกขนาดและคำแนะนำ (อยู่ใต้กรอบ พร้อมระบุสีบอกแถวแทน)
+            badge_y = box_y2 + 8
+            badge_text = f"📍 Master Header: {w}x{h} px | [🔴 บน = Main Zone] [🔵 ล่าง = Sub Map]"
+            badge_w = max(420, len(badge_text) * 8)
+            canvas.create_rectangle(box_x1, badge_y, box_x1 + badge_w, badge_y + 26, fill="#0b0f19", outline="#facc15", width=1.5, tags="guidelines")
+            canvas.create_text(box_x1 + 8, badge_y + 4, text=badge_text, fill="#fde047", font=("Segoe UI", 10, "bold"), anchor="nw", tags="guidelines")
 
         # 4. ฟังก์ชันตรวจจับว่าเมาส์อยู่ใกล้เส้นไหน
         def get_hover_target(x, y):
             tol = 8 # ระยะความไวของเส้น
             # เส้นแบ่งกลาง
-            if abs(y - box_mid_y) <= tol and (box_icon_x - 5 <= x <= box_x2 + 5):
+            if abs(y - box_mid_y) <= tol and (box_x1 - 5 <= x <= box_x2 + 5):
                 return 'mid'
             # ขอบบน
             if abs(y - box_y1) <= tol and (box_x1 - 5 <= x <= box_x2 + 5):
@@ -162,9 +156,6 @@ class OcrEngineMixin:
             # ขอบล่าง
             if abs(y - box_y2) <= tol and (box_x1 - 5 <= x <= box_x2 + 5):
                 return 'bottom'
-            # เส้นแบ่งไอคอน
-            if abs(x - box_icon_x) <= tol and (box_y1 - 5 <= y <= box_y2 + 5):
-                return 'icon'
             # ขอบซ้าย
             if abs(x - box_x1) <= tol and (box_y1 - 5 <= y <= box_y2 + 5):
                 return 'left'
@@ -182,7 +173,7 @@ class OcrEngineMixin:
             tgt = get_hover_target(e.x, e.y)
             if tgt in ['top', 'bottom', 'mid']:
                 canvas.config(cursor="size_ns")
-            elif tgt in ['left', 'right', 'icon']:
+            elif tgt in ['left', 'right']:
                 canvas.config(cursor="size_we")
             elif tgt == 'move':
                 canvas.config(cursor="fleur")
@@ -197,11 +188,11 @@ class OcrEngineMixin:
             orig_coords = {
                 'x1': box_x1, 'y1': box_y1,
                 'x2': box_x2, 'y2': box_y2,
-                'icon_x': box_icon_x, 'mid_y': box_mid_y
+                'mid_y': box_mid_y
             }
 
         def on_mouse_drag(e):
-            nonlocal box_x1, box_y1, box_x2, box_y2, box_icon_x, box_mid_y
+            nonlocal box_x1, box_y1, box_x2, box_y2, box_mid_y
             if not active_drag:
                 return
 
@@ -217,22 +208,18 @@ class OcrEngineMixin:
             elif active_drag == 'mid':
                 # ลากเส้นแบ่งกลาง ขึ้น-ลง (แบ่ง Main Zone กับ Sub Map)
                 box_mid_y = max(box_y1 + 10, min(orig_coords['mid_y'] + dy, box_y2 - 10))
-            elif active_drag == 'icon':
-                # ลากเส้นแบ่งไอคอน ซ้าย-ขวา
-                box_icon_x = max(box_x1 + 15, min(orig_coords['icon_x'] + dx, box_x2 - 30))
             elif active_drag == 'left':
                 # ลากขอบซ้าย
-                box_x1 = min(orig_coords['x1'] + dx, box_icon_x - 15)
+                box_x1 = min(orig_coords['x1'] + dx, box_x2 - 30)
             elif active_drag == 'right':
                 # ลากขอบขวา
-                box_x2 = max(orig_coords['x2'] + dx, box_icon_x + 30)
+                box_x2 = max(orig_coords['x2'] + dx, box_x1 + 30)
             elif active_drag == 'move':
                 # ย้ายทั้งกรอบ
                 box_x1 = orig_coords['x1'] + dx
                 box_y1 = orig_coords['y1'] + dy
                 box_x2 = orig_coords['x2'] + dx
                 box_y2 = orig_coords['y2'] + dy
-                box_icon_x = orig_coords['icon_x'] + dx
                 box_mid_y = orig_coords['mid_y'] + dy
             elif active_drag == 'new':
                 # วาดกรอบใหม่
@@ -242,7 +229,6 @@ class OcrEngineMixin:
                 y2 = max(drag_start_y, e.y)
                 if (x2 - x1) >= 20 and (y2 - y1) >= 20:
                     box_x1, box_y1, box_x2, box_y2 = x1, y1, x2, y2
-                    box_icon_x = box_x1 + min(50, max(30, int((y2 - y1) * 0.5)))
                     box_mid_y = box_y1 + ((y2 - y1) // 2)
 
             redraw_guides()
@@ -264,15 +250,14 @@ class OcrEngineMixin:
             if w > 20 and h > 20:
                 rel_x = (box_x1 - game_rect[0]) if game_rect else box_x1
                 rel_y = (box_y1 - game_rect[1]) if game_rect else box_y1
-                icon_w = max(10, box_icon_x - box_x1)
                 
-                # พิกัดกล่องสีแดงและกล่องสีฟ้าสัมพัทธ์กับกรอบนอก
-                rx1 = icon_w + 2
+                # พิกัดกล่องสีแดงและกล่องสีฟ้าสัมพัทธ์กับกรอบนอก (เต็มความกว้าง)
+                rx1 = 2
                 ry1 = 2
                 rx2 = w - 2
                 ry2 = max(ry1 + 5, (box_mid_y - box_y1) - 1)
 
-                bx1 = icon_w + 2
+                bx1 = 2
                 by1 = min(h - 5, (box_mid_y - box_y1) + 1)
                 bx2 = w - 2
                 by2 = h - 2
@@ -283,7 +268,7 @@ class OcrEngineMixin:
                     'w': w,
                     'h': h,
                     'abs': [box_x1, box_y1, box_x2, box_y2],
-                    'icon_w': icon_w,
+                    'icon_w': 0,
                     'red_box': [rx1, ry1, rx2, ry2],
                     'blue_box': [bx1, by1, bx2, by2]
                 }
@@ -296,7 +281,7 @@ class OcrEngineMixin:
                 self.crop_win.destroy()
 
         def reset_to_game():
-            nonlocal box_x1, box_y1, box_x2, box_y2, box_icon_x, box_mid_y
+            nonlocal box_x1, box_y1, box_x2, box_y2, box_mid_y
             if game_rect:
                 box_x1 = game_rect[0] + 8
                 box_y1 = game_rect[1] + 32
@@ -305,32 +290,31 @@ class OcrEngineMixin:
                 box_y1 = 100
             box_x2 = box_x1 + 270
             box_y2 = box_y1 + 80
-            box_icon_x = box_x1 + 44
             box_mid_y = box_y1 + 40
             redraw_guides()
 
-        # 6. แถบควบคุมลอยด้านบนจอ (Floating Control Bar)
-        ctrl_frame = tk.Frame(self.crop_win, bg="#0f172a", bd=1, relief="solid", highlightbackground="#38bdf8", highlightthickness=1)
-        ctrl_frame.place(relx=0.5, y=28, anchor="n")
+        # 6. แถบควบคุมลอย (Floating Control Bar - ย้ายมาไว้ระดับกลางจอ ไม่บังด้านบนและด้านล่าง)
+        ctrl_frame = tk.Frame(self.crop_win, bg="#0b0f19", bd=2, relief="ridge", highlightbackground="#38bdf8", highlightthickness=2)
+        ctrl_frame.place(relx=0.5, rely=0.5, anchor="center")
 
-        lbl_tip = tk.Label(ctrl_frame, text="🖱️ ลากเส้น [ ขอบบน / ขอบล่าง / เส้นแบ่งกลาง / เส้นไอคอน ] ขึ้น-ลง หรือ ซ้าย-ขวา ปรับให้ตรงตามต้องการ", 
-                           font=("Segoe UI", 11), fg="#94a3b8", bg="#0f172a", padx=10, pady=6)
+        lbl_tip = tk.Label(ctrl_frame, text="🖱️ ลากเส้น [ ขอบบน / ขอบล่าง / เส้นแบ่งกลาง ] ขึ้น-ลง หรือ ขอบซ้าย-ขวา ปรับให้ตรงตามต้องการ", 
+                           font=("Segoe UI", 11, "bold"), fg="#f8fafc", bg="#0b0f19", padx=14, pady=8)
         lbl_tip.pack(side=tk.LEFT)
 
-        btn_save = tk.Button(ctrl_frame, text="💾 บันทึกกรอบ", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#10b981", 
-                             activebackground="#059669", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=12, pady=4,
+        btn_save = tk.Button(ctrl_frame, text="💾 บันทึกกรอบ", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#059669", 
+                             activebackground="#10b981", activeforeground="#ffffff", relief="raised", bd=2, cursor="hand2", padx=14, pady=5,
                              command=save_and_close)
-        btn_save.pack(side=tk.LEFT, padx=6, pady=4)
+        btn_save.pack(side=tk.LEFT, padx=6, pady=5)
 
-        btn_reset = tk.Button(ctrl_frame, text="🔄 รีเซ็ต", font=("Segoe UI", 11), fg="#e2e8f0", bg="#334155", 
-                              activebackground="#475569", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=8, pady=4,
+        btn_reset = tk.Button(ctrl_frame, text="🔄 รีเซ็ต", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#334155", 
+                              activebackground="#475569", activeforeground="#ffffff", relief="raised", bd=2, cursor="hand2", padx=10, pady=5,
                               command=reset_to_game)
-        btn_reset.pack(side=tk.LEFT, padx=4, pady=4)
+        btn_reset.pack(side=tk.LEFT, padx=4, pady=5)
 
-        btn_cancel = tk.Button(ctrl_frame, text="❌ ยกเลิก (ESC)", font=("Segoe UI", 11), fg="#f87171", bg="#1e293b", 
-                               activebackground="#3d1b1b", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=8, pady=4,
+        btn_cancel = tk.Button(ctrl_frame, text="❌ ยกเลิก (ESC)", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#dc2626", 
+                               activebackground="#ef4444", activeforeground="#ffffff", relief="raised", bd=2, cursor="hand2", padx=10, pady=5,
                                command=cancel_crop)
-        btn_cancel.pack(side=tk.LEFT, padx=(4, 8), pady=4)
+        btn_cancel.pack(side=tk.LEFT, padx=(4, 10), pady=5)
 
         # ผูกปุ่ม Esc และคลิกขวาเพื่อยกเลิก
         self.crop_win.bind("<Escape>", cancel_crop)
@@ -389,18 +373,21 @@ class OcrEngineMixin:
 
         reg = getattr(self, 'custom_char_ocr_region', None)
         if isinstance(reg, dict):
-            if game_rect:
+            abs_c = reg.get('abs', None)
+            if abs_c and len(abs_c) == 4 and abs_c[2] > abs_c[0] and abs_c[3] > abs_c[1]:
+                box_x1, box_y1 = abs_c[0], abs_c[1]
+                box_w = abs_c[2] - abs_c[0]
+                box_h = abs_c[3] - abs_c[1]
+            elif game_rect and 'x' in reg and 'y' in reg:
                 box_x1 = game_rect[0] + reg.get('x', 70)
                 box_y1 = game_rect[1] + reg.get('y', game_rect[3] - game_rect[1] - 70)
+                box_w = reg.get('w', def_w)
+                box_h = reg.get('h', def_h)
             else:
-                abs_c = reg.get('abs', None)
-                if abs_c and len(abs_c) == 4:
-                    box_x1, box_y1 = abs_c[0], abs_c[1]
-                else:
-                    box_x1 = reg.get('x', def_x1)
-                    box_y1 = reg.get('y', def_y1)
-            box_w = reg.get('w', def_w)
-            box_h = reg.get('h', def_h)
+                box_x1 = reg.get('x', def_x1)
+                box_y1 = reg.get('y', def_y1)
+                box_w = reg.get('w', def_w)
+                box_h = reg.get('h', def_h)
             box_x2 = box_x1 + box_w
             box_y2 = box_y1 + box_h
         else:
@@ -409,10 +396,10 @@ class OcrEngineMixin:
             box_x2 = def_x1 + def_w
             box_y2 = def_y1 + def_h
 
-        box_x1 = max(0, min(box_x1, sw - 80))
-        box_y1 = max(0, min(box_y1, sh - 40))
-        box_x2 = max(box_x1 + 40, min(box_x2, sw - 10))
-        box_y2 = max(box_y1 + 15, min(box_y2, sh - 10))
+        box_x1 = max(0, min(box_x1, sw - 50))
+        box_y1 = max(0, min(box_y1, sh - 30))
+        box_x2 = max(box_x1 + 30, min(box_x2, sw))
+        box_y2 = max(box_y1 + 15, min(box_y2, sh))
 
         active_drag = None
         drag_start_x = 0
@@ -424,12 +411,15 @@ class OcrEngineMixin:
             w = box_x2 - box_x1
             h = box_y2 - box_y1
 
-            canvas.create_rectangle(box_x1, box_y1, box_x2, box_y2, outline="#ef4444", width=2, tags="char_guides")
-            canvas.create_rectangle(box_x1 - 2, box_y1 - 2, box_x1 + 10, box_y1 + 10, fill="#ef4444", outline="#ffffff", width=1, tags="char_guides")
-            canvas.create_rectangle(box_x2 - 10, box_y2 - 10, box_x2 + 2, box_y2 + 2, fill="#ef4444", outline="#ffffff", width=1, tags="char_guides")
-            canvas.create_text(box_x1 + (w // 2), box_y1 + (h // 2), text="👤 ชื่อตัวละคร", fill="#fca5a5", font=("Segoe UI", 10, "bold"), tags="char_guides")
-            canvas.create_text(box_x1, max(40, box_y1 - 18), text=f"👤 กรอบชื่อตัวละคร: {w}x{h} px (ครอบชื่อเหนือหลอดเลือด HP/MP)",
-                               fill="#fca5a5", font=("Segoe UI", 10, "bold"), anchor="nw", tags="char_guides")
+            canvas.create_rectangle(box_x1, box_y1, box_x2, box_y2, outline="#ef4444", width=1.5, tags="char_guides")
+            canvas.create_rectangle(box_x1 - 2, box_y1 - 2, box_x1 + 8, box_y1 + 8, fill="#ef4444", outline="#ffffff", width=1, tags="char_guides")
+            canvas.create_rectangle(box_x2 - 8, box_y2 - 8, box_x2 + 2, box_y2 + 2, fill="#ef4444", outline="#ffffff", width=1, tags="char_guides")
+            
+            # ป้ายบอกขนาดอยู่เหนือกรอบนิดหน่อย พร้อมพื้นหลังเข้ม
+            b_y = max(10, box_y1 - 26)
+            canvas.create_rectangle(box_x1, b_y, box_x1 + 220, b_y + 22, fill="#0b0f19", outline="#ef4444", width=1, tags="char_guides")
+            canvas.create_text(box_x1 + 6, b_y + 3, text=f"👤 กรอบตัวละคร: {w}x{h} px",
+                               fill="#fca5a5", font=("Segoe UI", 9, "bold"), anchor="nw", tags="char_guides")
 
         def get_hover_target(x, y):
             tol = 8
@@ -538,28 +528,28 @@ class OcrEngineMixin:
             box_y2 = box_y1 + 32
             redraw_guides()
 
-        # แถบควบคุมลอย
-        ctrl_frame = tk.Frame(self.char_crop_win, bg="#0f172a", bd=1, relief="solid", highlightbackground="#ef4444", highlightthickness=1)
-        ctrl_frame.place(relx=0.5, y=28, anchor="n")
+        # แถบควบคุมลอย (Floating Control Bar - ย้ายมาไว้ระดับกลางจอ ไม่ทับหลอดเลือด HP/MP ด้านล่าง)
+        ctrl_frame = tk.Frame(self.char_crop_win, bg="#0b0f19", bd=2, relief="ridge", highlightbackground="#ef4444", highlightthickness=2)
+        ctrl_frame.place(relx=0.5, rely=0.5, anchor="center")
 
         lbl_tip = tk.Label(ctrl_frame, text="🖱️ ลากกรอบสีแดงครอบ 'ชื่อตัวละคร' เหนือหลอดเลือด HP/MP",
-                           font=("Segoe UI", 11), fg="#94a3b8", bg="#0f172a", padx=10, pady=6)
+                           font=("Segoe UI", 11, "bold"), fg="#f8fafc", bg="#0b0f19", padx=14, pady=8)
         lbl_tip.pack(side=tk.LEFT)
 
-        btn_save = tk.Button(ctrl_frame, text="💾 บันทึกกรอบตัวละคร", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#10b981",
-                             activebackground="#059669", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=12, pady=4,
+        btn_save = tk.Button(ctrl_frame, text="💾 บันทึกกรอบตัวละคร", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#059669",
+                             activebackground="#10b981", activeforeground="#ffffff", relief="raised", bd=2, cursor="hand2", padx=14, pady=5,
                              command=save_and_close)
-        btn_save.pack(side=tk.LEFT, padx=6, pady=4)
+        btn_save.pack(side=tk.LEFT, padx=6, pady=5)
 
-        btn_reset = tk.Button(ctrl_frame, text="🔄 รีเซ็ต", font=("Segoe UI", 11), fg="#e2e8f0", bg="#334155",
-                              activebackground="#475569", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=8, pady=4,
+        btn_reset = tk.Button(ctrl_frame, text="🔄 รีเซ็ต", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#334155",
+                              activebackground="#475569", activeforeground="#ffffff", relief="raised", bd=2, cursor="hand2", padx=10, pady=5,
                               command=reset_to_game)
-        btn_reset.pack(side=tk.LEFT, padx=4, pady=4)
+        btn_reset.pack(side=tk.LEFT, padx=4, pady=5)
 
-        btn_cancel = tk.Button(ctrl_frame, text="❌ ยกเลิก (ESC)", font=("Segoe UI", 11), fg="#f87171", bg="#1e293b",
-                               activebackground="#3d1b1b", activeforeground="#ffffff", relief="flat", cursor="hand2", padx=8, pady=4,
+        btn_cancel = tk.Button(ctrl_frame, text="❌ ยกเลิก (ESC)", font=("Segoe UI", 11, "bold"), fg="#ffffff", bg="#dc2626",
+                               activebackground="#ef4444", activeforeground="#ffffff", relief="raised", bd=2, cursor="hand2", padx=10, pady=5,
                                command=cancel_crop)
-        btn_cancel.pack(side=tk.LEFT, padx=(4, 8), pady=4)
+        btn_cancel.pack(side=tk.LEFT, padx=(4, 10), pady=5)
 
         self.char_crop_win.bind("<Escape>", cancel_crop)
         canvas.bind("<Escape>", cancel_crop)
@@ -621,6 +611,7 @@ class OcrEngineMixin:
                     self.current_char_level = str(lvl)
                     self.current_char_job = job
                     self.current_char_nesolet_loaded = True
+                    self.wallet_nesolet_val = float(nesolet_val)
                     self.wallet_nesolet_str = f"{nesolet_val:,.1f}"
                     self.wallet_nesolet_compact = format_compact_number(nesolet_val)
 
@@ -690,7 +681,11 @@ class OcrEngineMixin:
             char_name = matched.get('name')
             self._fetch_character_detail(asset_key, char_name)
         else:
-            self.log_cmd(f"⚠️ ไม่พบตัวละคร '{detected_name}' ในกระเป๋า")
+            # แม้ไม่พบในกระเป๋า API ก็นำชื่อที่ OCR อ่านได้ขึ้นแสดงบนปุ่มทันที
+            self.current_char_name = detected_name
+            self.save_config()
+            self.root.after(0, self.update_drop_ui)
+            self.log_cmd(f"⚠️ ไม่พบตัวละคร '{detected_name}' ในกระเป๋า (ใช้ชื่อจาก OCR)")
 
     def _run_auto_detect_character(self, silent=False):
         if not hasattr(self, 'custom_char_ocr_region') or not self.custom_char_ocr_region:
@@ -758,7 +753,109 @@ class OcrEngineMixin:
         """กดปุ่ม 🔍 หรือรันอัตโนมัติเพื่อตรวจจับชื่อแมพแบบ Real-time"""
         threading.Thread(target=self._run_auto_detect_map, args=(silent,), daemon=True).start()
 
+    def check_map_screen_transition(self):
+        """
+        ⚡ Smart Transition Monitor (White Pixel Masking + Black Screen Check)
+        - ตรวจจับความเปลี่ยนแปลงของหน้าจอแบบความเร็วสูงพิเศษ (0.1ms)
+        - กรองฉากหลังออกด้วย White Masking (>215) ป้องกันการขยับของพื้นหลังขณะตัวละครเดิน
+        - ตรวจจับจังหวะ Fading Black ตอนวาปเข้าแมพใหม่
+        - คืนค่า True เฉพาะเมื่อมีเหตุการณ์เปลี่ยนแมพเกิดขึ้นจริง เพื่อปลุก OCR มาอ่าน 1 ครั้ง
+        """
+        if getattr(self, '_is_ocr_running', False):
+            return False
+
+        # ตรวจหาหน้าต่างเกม
+        hwnd = None
+        def enum_cb(h, _):
+            nonlocal hwnd
+            if win32gui.IsWindowVisible(h) and not win32gui.IsIconic(h):
+                title = win32gui.GetWindowText(h)
+                t_lower = title.lower()
+                if "maplestory" in t_lower and not any(x in t_lower for x in ["visual studio", ".pyw", ".py", ".md", "antigravity", "cursor", "cmd.exe", "powershell"]):
+                    hwnd = h
+        win32gui.EnumWindows(enum_cb, None)
+        if not hwnd:
+            return False
+
+        try:
+            rect = win32gui.GetWindowRect(hwnd)
+            win_w = rect[2] - rect[0]
+            if hasattr(self, 'custom_ocr_region') and self.custom_ocr_region:
+                reg = self.custom_ocr_region
+                if isinstance(reg, dict):
+                    crop_x = rect[0] + reg.get('x', 0)
+                    crop_y = rect[1] + reg.get('y', 0)
+                    crop_w = reg.get('w', 300)
+                    crop_h = reg.get('h', 85)
+                elif isinstance(reg, (list, tuple)) and len(reg) == 4:
+                    crop_x = reg[0]
+                    crop_y = reg[1]
+                    crop_w = reg[2] - reg[0]
+                    crop_h = reg[3] - reg[1]
+                else:
+                    crop_x, crop_y, crop_w, crop_h = rect[0] + 8, rect[1] + 32, min(420, max(300, win_w // 3)), 85
+            else:
+                crop_x, crop_y, crop_w, crop_h = rect[0] + 8, rect[1] + 32, min(420, max(300, win_w // 3)), 85
+
+            if crop_w < 20 or crop_h < 20:
+                return False
+
+            with mss.mss() as sct:
+                monitor = {"top": crop_y, "left": crop_x, "width": crop_w, "height": crop_h}
+                sct_img = sct.grab(monitor)
+                pil_img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+
+            # 1. ⬛ Black Screen Transition Detection (จังหวะโหลดวาปข้ามแมพ)
+            # สุ่ม/ย่อเหลือขนาด 16x16 เพื่อหาค่าความสว่างเฉลี่ย
+            tiny_gray = pil_img.convert("L").resize((16, 16), Image.Resampling.NEAREST)
+            pixels = list(tiny_gray.getdata())
+            avg_brightness = sum(pixels) / len(pixels)
+
+            was_black = getattr(self, '_screen_was_black', False)
+            if avg_brightness < 20:  # จอมืดดับสนิท (Fading to Black)
+                self._screen_was_black = True
+                return False
+            elif was_black and avg_brightness >= 35:
+                # 🌟 เพิ่งสว่างขึ้นมาจากจอดำ = วาปเข้าแมพใหม่เรียบร้อย 100%!
+                self._screen_was_black = False
+                return True
+
+            # 2. 🔤 White Pixel Masking (จับเฉพาะรูปทรงตัวอักษรสีขาว RGB > 215)
+            # ตัดฉากหลังโปร่งแสง (สีส้ม/น้ำเงิน/เขียว/ต้นไม้) ทิ้งเป็นสีดำทั้งหมด 100%
+            white_mask = tiny_gray.point(lambda p: 255 if p >= 215 else 0)
+            mask_data = list(white_mask.getdata())
+            # สร้าง Hash สั้นๆ จาก Bitmask 256 บิต
+            curr_hash = sum(1 << i for i, p in enumerate(mask_data) if p > 0)
+            white_count = sum(1 for p in mask_data if p > 0)
+
+            # ถ้าไม่มีตัวหนังสือสีขาวเลย อาจเป็นจังหวะหน้าจออื่น
+            if white_count < 3:
+                return False
+
+            last_hash = getattr(self, '_last_text_mask_hash', None)
+            if last_hash is None:
+                self._last_text_mask_hash = curr_hash
+                return False
+
+            # คำนวณความต่างของบิต (Hamming Distance)
+            xor_diff = curr_hash ^ last_hash
+            diff_bits = bin(xor_diff).count('1')
+
+            # ถ้าบิตรูปทรงตัวอักษรสีขาวต่างกันเกิน 14 บิต (~6-10% ของ 256 บิต)
+            # แสดงว่าตัวหนังสือเปลี่ยนคำแน่นอน! (ไม่ใช่แค่เงาหรือเมาส์สะกิด)
+            if diff_bits >= 14:
+                self._last_text_mask_hash = curr_hash
+                return True
+
+            return False
+        except Exception:
+            return False
+
     def _run_auto_detect_map(self, silent=False):
+        if getattr(self, '_is_ocr_running', False):
+            return
+        self._is_ocr_running = True
+
         def set_btn_state(text, bg="#16202c", fg="#38bdf8"):
             if not silent and hasattr(self, 'btn_ocr') and self.btn_ocr and self.btn_ocr.winfo_exists():
                 self.btn_ocr.config(text=text, bg=bg, fg=fg)
@@ -840,8 +937,9 @@ class OcrEngineMixin:
                 raw_sub = ""
 
                 def clean_ocr_line(s):
-                    # 1. ตัดอักขระพิเศษและอักขระเดี่ยวประเภทขอบเส้น (เช่น I, |, l, 1, !) ที่หัว-ท้าย
-                    s = re.sub(r'^[Il|1!\s\-_~•\.:\(\)\[\]/\\;]+', '', s)
+                    # 1. ตัดเฉพาะสัญลักษณ์ขอบจอ ไม่ตัดตัวอักษร I หรือ l ที่เป็นพยัญชนะต้นของคำ (เช่น Illiard, Iliard, Island)
+                    s = re.sub(r'^[|1!\s\-_~•\.:\(\)\[\]/\\;]+', '', s)
+                    s = re.sub(r'^[Il]\s+', '', s)  # ตัด I หรือ l เฉพาะกรณีเป็นตัวโดดๆ ตามด้วยวรรค (เศษขอบกรอบ)
                     s = re.sub(r'[\s\-_\|~•\.:\(\)\[\]/\\;]+$', '', s)
                     # 2. ตัดคำซ้ำที่ติดกัน เช่น "Scrapyard Scrapyard Lot Scrapya" -> "Scrapyard Lot"
                     words = s.split()
@@ -964,30 +1062,34 @@ class OcrEngineMixin:
                         self.root.after(1600, lambda: set_btn_state("🔍 Scan", bg="#16202c", fg="#38bdf8"))
                     return
 
+                matched_item = None
+
+                clean_title = re.sub(r'[^a-zA-Z0-9\s]', '', title_line).strip()
+                clean_sub = re.sub(r'[^a-zA-Z0-9\s]', '', sub_line).strip()
+
                 # =====================================================
-                # 🏙️ Phase 0: Interception Check - ตรวจสอบ Town & Safe Zone ก่อนเสมอ!
-                # ตรวจสอบทั้งบรรทัดย่อย (sub_line) และข้อความรวม (combined_text)
+                # 🏙️ Phase 0: Town & Safe Zone Interception (เช็คก่อนเสมอ!)
+                # ถ้าผู้ใช้อยู่ในเมืองหลวง, ถนนคนเดิน หรือเซฟโซน ต้องสลับเป็น Safe Zone ทันที
                 # =====================================================
                 TOWN_OCR_KEYWORDS = [
-                    # คีย์เวิร์ดทั่วไปของเซฟโซน/เมือง (ดักจับทุกแมพในเกม)
-                    "town", "village", "haven", "shelter", "campsite", "entrance", "safe zone",
-                    "safe", "square", "lobby", "waiting room", "party room", "market", "station",
-                    # Arcane River Towns & Camps
-                    "nameless", "chu chu", "chew chew", "chewchew", "chu village", "chew village", "slurpy house",
-                    "lachelein", "hotel lachelein", "main street", "arcana", "harp village",
-                    "spirit tree", "morass", "trueffet", "esfera", "base camp",
-                    "cernium", "burnium", "hotel arcus", "karrote", "odium",
-                    # Victoria Island & Ossyria
-                    "henesys", "ellinia", "perion", "kerning", "lith harbor", "nautilus",
-                    "sleepywood", "orbis", "el nath", "aqua road", "aquarium", "ludibrium",
-                    "leafre", "ariant", "magatia", "herb town", "mu lung", "korean folk",
-                    "ereve", "elluel", "pantheon", "fox village", "savage terminal", "ristonia"
+                    # Arcane River Towns & Safe Zones
+                    "lachelein main street", "hotel lachelein", "lachelein canal",
+                    "nameless town", "chu chu village", "chew chew village", "chew village", "slurpy house",
+                    "yum yum village", "spirit tree", "trueffet square", "base camp", "deserted camp",
+                    "cernium square", "hotel arcus",
+                    # Victoria Island & Classic Towns
+                    "henesys", "ellinia", "perion", "kerning city", "lith harbor", "nautilus harbor",
+                    "sleepywood", "orbis", "el nath", "aquarium", "ludibrium",
+                    "leafre", "ariant", "magatia", "herb town", "mu lung", "korean folk town",
+                    "ereve", "elluel", "pantheon", "fox village", "savage terminal", "ristonia",
+                    "edelstein", "haven", "relic excavation camp", "glacier melting camp",
+                    # คีย์เวิร์ดทั่วไป
+                    "town", "village", "safe zone", "safe", "waiting room", "party room", "market", "lobby"
                 ]
 
                 detected_town = False
                 detected_town_name = "ในเมือง"
                 
-                # ตรวจจากคีย์เวิร์ดเมือง: ดูจากทั้ง sub_line, title_line และ combined_text
                 for town_kw in TOWN_OCR_KEYWORDS:
                     if town_kw in sub_line or town_kw in combined_text or town_kw in title_line:
                         detected_town = True
@@ -995,8 +1097,14 @@ class OcrEngineMixin:
                             detected_town_name = "Haven"
                         elif "chu" in town_kw or "chew" in town_kw:
                             detected_town_name = "Chu Chu Village"
-                        elif "entrance" in town_kw:
-                            detected_town_name = "ทางเข้า / เซฟโซน"
+                        elif "lachelein" in town_kw:
+                            detected_town_name = "Lachelein"
+                        elif "square" in town_kw or "market" in town_kw:
+                            detected_town_name = "ตลาด / จัตุรัส"
+                        elif "yum" in town_kw:
+                            detected_town_name = "Yum Yum Village"
+                        elif "nameless" in town_kw:
+                            detected_town_name = "Nameless Town"
                         else:
                             detected_town_name = town_kw.title()
                         print(f"[OCR-Town] Detected safe town: {detected_town_name} (from keyword '{town_kw}')")
@@ -1026,10 +1134,42 @@ class OcrEngineMixin:
                     self.root.after(0, apply_town)
                     return
 
-                matched_item = None
+                # =====================================================
+                # 🎯 Phase 1: Ultra-Fast & Precise MCP Sub-Map Resolver (9,106 Entries DB)
+                # เช็คฐานข้อมูลห้องย่อยแท้จากเกม (เฉพาะเมื่อไม่ใช่เขตเมือง/Safe Zone)
+                # =====================================================
+                db = getattr(self, 'map_mapping_db', {})
+                resolver = db.get('submap_resolver', {}) if db else {}
+                if resolver:
+                    target_lid = None
+                    # จัดเตรียมชุดคำค้นหา รวมถึงเคส OCR ตัว l/i สลับกัน เช่น iliard <-> illiard
+                    candidates = [clean_sub, sub_line, f"{clean_title} {clean_sub}", f"{clean_title} - {clean_sub}", clean_title]
+                    if "illiard" in sub_line or "illiard" in combined_text:
+                        candidates.extend(["illiard field 5", "illiard field", "illiard fungos"])
+                    elif "iliard" in sub_line or "iliard" in combined_text:
+                        candidates.extend(["illiard field 5", "illiard field", "illiard fungos"])
 
-                clean_title = re.sub(r'[^a-zA-Z0-9\s]', '', title_line).strip()
-                clean_sub = re.sub(r'[^a-zA-Z0-9\s]', '', sub_line).strip()
+                    # 1. แมตช์คู่ตรงๆ
+                    for cand in candidates:
+                        if cand and cand in resolver:
+                            target_lid = resolver[cand]
+                            break
+                    # 2. ค้นหาแบบ substring เรียงจากคำยาวไปสั้น
+                    if not target_lid:
+                        for sm_key, lid_val in sorted(resolver.items(), key=lambda x: len(x[0]), reverse=True):
+                            if len(sm_key) >= 4 and (sm_key in sub_line or sm_key in combined_text):
+                                target_lid = lid_val
+                                break
+                    # 3. Fuzzy Close Match
+                    if not target_lid and clean_sub:
+                        close_keys = difflib.get_close_matches(clean_sub, resolver.keys(), n=1, cutoff=0.75)
+                        if close_keys:
+                            target_lid = resolver[close_keys[0]]
+
+                    if target_lid:
+                        matched_item = next((item for item in self.layers_list if item["layerId"] == target_lid), None)
+                        if matched_item:
+                            print(f"[OCR-MCP-Resolver] Matched layer via MCP DB: {matched_item['layerName']} (ID: {matched_item['layerId']})")
 
                 # =====================================================
                 # 🗺️ Master Table: Global Sub-Map & Zone Alias ทั้งหมดใน MapleStory N
@@ -1056,11 +1196,13 @@ class OcrEngineMixin:
                     (130005, ["reverse city surface", "surface 1", "surface 2", "surface 3", "hidden station",
                               "rooftop", "surface", "overpass"]),
 
-                    # --- Chew Chew Island (Arc. 100~190) ---
+                    # --- Chew Chew Island & Yum Yum Island (Arc. 100~190) ---
                     # 131005: "Illiard Fungos"
                     (131005, ["slurpy forest depths", "slurpy forest", "illiard plains", "illiard fungos",
+                              "illiard field", "illiard", "illiard 5", "illiard field 5", "illiard 1", "illiard 2", "illiard 3", "illiard 4", "illiard 6",
+                              "fungos forest", "fungos", "yum yum island", "yum yum",
                               "one-a-bobber", "one a bobber", "bitty-bobber", "bitty bobber", "bobber 1", "bobber 2",
-                              "slurpy", "fungos", "illiard"]),
+                              "slurpy"]),
                     # 131001: "Five-Color Hill"
                     (131001, ["five-color hill", "five color hill", "mottled forest 1", "mottled forest 2",
                               "mottled forest 3", "mottled forest", "colour hill", "hill path", "five-color", "five color", "mottled"]),
@@ -1278,10 +1420,10 @@ class OcrEngineMixin:
                 ]
 
                 # =====================================================
-                # 🎯 Phase 1: Sub-Map First Matching ผ่าน Global Aliases (ลำดับสำคัญสูงสุด!)
+                # 🎯 Phase 1: Sub-Map First Matching ผ่าน Global Aliases (ลำดับสำคัญ)
                 # แถวล่าง (Sub Map) คือชื่อห้อง/สถานที่จริงที่เฉพาะเจาะจงที่สุด
                 # =====================================================
-                if clean_sub:
+                if not matched_item and clean_sub:
                     for target_lid, kw_list in GLOBAL_MAP_ALIASES:
                         # เรียงคีย์เวิร์ดจากยาวไปสั้น เพื่อให้ได้คำที่เฉพาะเจาะจงที่สุดก่อน
                         for kw in sorted(kw_list, key=len, reverse=True):
@@ -1476,6 +1618,8 @@ class OcrEngineMixin:
                     elif not is_layer_changed and is_sub_changed and silent:
                         # 🚪 อยู่ในโซนเดิมแต่เปลี่ยนห้องย่อย! อัปเดตชื่อห้องทันที
                         def update_submap_only(s_name=raw_sub):
+                            self.is_in_town = False
+                            self.has_no_drop = False
                             self.detected_submap_name = s_name.strip() if s_name else ""
                             self.save_config()
                             self.update_drop_ui()
@@ -1487,6 +1631,7 @@ class OcrEngineMixin:
                     # กรณีเปลี่ยนแมพจริง หรือผู้ใช้กดปุ่ม Scan เอง:
                     def apply_match(s_name=raw_sub):
                         self.is_in_town = False  # ออกจากเมืองแล้ว - เคลียร์ flag
+                        self.has_no_drop = False # รีเซ็ตสถานะปลอดภัย/ไม่มีดรอป
                         self.current_town_name = ""
                         self.detected_submap_name = s_name.strip() if s_name else ""
                         self.selected_layer_id = target_item["layerId"]
@@ -1534,6 +1679,7 @@ class OcrEngineMixin:
                 self.root.after(0, lambda: set_btn_state("⚠️ Error", bg="#3d1b1b", fg="#f87171"))
                 self.root.after(1600, lambda: set_btn_state("🔍 Scan", bg="#16202c", fg="#38bdf8"))
         finally:
+            self._is_ocr_running = False
             # เคลียร์ตัวแปรและคืนหน่วยความจำทันที ไม่ค้างในแรม
             if 'sct' in locals():
                 try:

@@ -30,9 +30,10 @@ from modules.common import (
 from modules.api_client import ApiClientMixin
 from modules.ocr_engine import OcrEngineMixin
 from modules.modals import ModalsMixin
+from modules.map_manager import MapManagerMixin, parse_zone_and_submap
 
 
-class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
+class TimerToolApp(ApiClientMixin, MapManagerMixin, OcrEngineMixin, ModalsMixin):
     format_compact_number = staticmethod(format_compact_number)
     format_compact_stock = staticmethod(format_compact_stock)
 
@@ -43,13 +44,13 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
         self.trans_key = "#000001"
         self.bg_color = "#121418" # พื้นหลังคุมโทน MS แท้ๆ
         
-        # ขนาดเริ่มต้น Default V.2 หน้าต่างหลักแนวนอน และ Vertical Sidebar
+        # ขนาดเริ่มต้น Default (ตั้งแถบข้าง Vertical Sidebar เป็นค่าเริ่มต้นตามคำสั่ง)
         self.v2_w = 491
         self.v2_h = 418
         self.sidebar_w = 184
         self.sidebar_h = 768
-        self.full_w = 491
-        self.full_h = 418
+        self.full_w = 184
+        self.full_h = 768
         self.mini_w = 560
         self.mini_h = 72
         self.custom_font_size = 0  # 0 = ค่ามาตรฐานตามระบบออโต้สเกล, หรือระบุขนาดเจาะจง (เช่น 7, 8, 9, 10)
@@ -146,6 +147,7 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
         self.best_zone_map = None
         self.lbl_hot_map = None
         self.lbl_hot_rate = None
+        self.lbl_hot_qty = None
         self.last_hot_log_ts = 0
         self.last_hot_logged_lid = None
         
@@ -216,6 +218,13 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
         # 🪙 ดึงข้อมูลตัวละครและ Nesolet ครั้งแรกใน Background Thread
         threading.Thread(target=self._auto_init_character, daemon=True).start()
         
+        # 📊 เริ่มระบบ Income Tracker Mod เบื้องหลังอัตโนมัติ (ติดตามยอดฟาร์มและซิงค์ On-Chain ตลอดเวลา)
+        try:
+            from Mod.income_tracker import IncomeTrackerMod
+            self._income_tracker_mod = IncomeTrackerMod(self)
+        except Exception as e:
+            print("Auto-init IncomeTrackerMod error:", e)
+        
         # เริ่มการวนลูปนาฬิกา
         self.update_clock_loop()
 
@@ -250,21 +259,6 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
             except Exception:
                 pass
 
-    def select_layer_by_id(self, layer_id):
-        for fld in self.layers_list:
-            if fld.get("layerId") == layer_id:
-                self.is_in_town = False
-                self.has_no_drop = False
-                self.current_town_name = ""
-                self.detected_submap_name = ""
-                self.selected_layer_id = fld.get("layerId")
-                self.selected_layer_name = fld.get("layerName")
-                self.selected_group_name = fld.get("groupName")
-                self.save_config()
-                self.setup_ui_elements()
-                self.fetch_drop_data_async()
-                self.log_cmd(f"เลือกแมพ: {self.selected_layer_name}")
-                break
 
 
     def update_drop_ui(self):
@@ -460,20 +454,47 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
             if ico_mini:
                 self.lbl_mini_map.config(text=f" {disp_m_mini}", image=ico_mini, compound=tk.LEFT)
         # อัปเดตข้อมูลแมพแนะนำสุดฮอตในโซน (แสดงผลอย่างเดียว ไม่ปนกับแมพหลัก)
+        is_vert_mode = getattr(self, 'full_w', 460) <= 240
         if getattr(self, 'lbl_hot_map', None) is not None and self.lbl_hot_map.winfo_exists():
             if self.best_zone_map:
                 b_name = self.best_zone_map.get("layerName", "")
-                if len(b_name) > 22:
-                    b_name = b_name[:20] + ".."
+                max_chars = 9 if is_vert_mode else 22
+                if len(b_name) > max_chars:
+                    b_name = b_name[:max_chars - 1] + ".."
                 self.lbl_hot_map.config(text=f"🔥 {b_name}", fg="#fde047")
             else:
-                self.lbl_hot_map.config(text="🔥 แนะนำในโซน...", fg="#94a3b8")
+                self.lbl_hot_map.config(text="🔥 แนะนำ..." if is_vert_mode else "🔥 แนะนำในโซน...", fg="#94a3b8")
+
+        if getattr(self, 'lbl_hot_qty', None) is not None and self.lbl_hot_qty.winfo_exists():
+            if self.best_zone_map:
+                exp_min = self.best_zone_map.get("exp_min", 0.0)
+                exp_max = self.best_zone_map.get("exp_max", 0.0)
+                if exp_max > 0:
+                    if is_vert_mode:
+                        q_txt = f"{exp_min:.1f}~{exp_max:.1f}"
+                    else:
+                        q_txt = f"{exp_min:.2f} ~ {exp_max:.2f} N"
+                else:
+                    q_txt = "--" if is_vert_mode else "-- N"
+                self.lbl_hot_qty.config(text=f"⚡{q_txt}", fg="#facc15")
+            else:
+                self.lbl_hot_qty.config(text="--" if is_vert_mode else "-- N", fg="#64748b")
 
         if getattr(self, 'lbl_hot_rate', None) is not None and self.lbl_hot_rate.winfo_exists():
             if self.best_zone_map:
-                self.lbl_hot_rate.config(text=f"{self.best_zone_map.get('rate', 0.0):.1f}%", fg="#4ade80")
+                r_val = self.best_zone_map.get('rate', 0.0)
+                self.lbl_hot_rate.config(text=f"{r_val:.1f}%", fg="#4ade80")
             else:
                 self.lbl_hot_rate.config(text="--%", fg="#64748b")
+
+        # อัปเดตปุ่ม Char OCR ให้แสดงชื่อตัวละครที่ตรวจจับได้
+        if getattr(self, 'btn_char_ocr', None) is not None and self.btn_char_ocr.winfo_exists():
+            c_name = getattr(self, 'current_char_name', '')
+            if c_name:
+                disp_c = c_name if len(c_name) <= 9 else c_name[:8] + ".."
+                self.btn_char_ocr.config(text=f"👤 {disp_c}", fg="#c084fc", bg="#2e1065")
+            else:
+                self.btn_char_ocr.config(text="👤 Char", fg="#a855f7", bg="#1e1b2e")
 
         # รีเฟรชข้อความ CMD Terminal
         self.refresh_cmd_view()
@@ -494,9 +515,9 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
                     self.v2_h = max(440, cfg.get("v2_h", 444))
                     self.sidebar_w = max(160, cfg.get("sidebar_w", 184))
                     self.sidebar_h = max(540, cfg.get("sidebar_h", 768))
-                    # บังคับเปิดครั้งแรก/เปิดใหม่ ให้เป็นหน้าต่างหลักปกติ (V.2 แนวนอน) เสมอตามคำสั่งผู้ใช้
-                    self.full_w = self.v2_w
-                    self.full_h = self.v2_h
+                    # บังคับเปิดครั้งแรก/เปิดใหม่ ให้เป็นโหมดแถบข้าง (Vertical Sidebar) เสมอตามคำสั่งผู้ใช้
+                    self.full_w = self.sidebar_w
+                    self.full_h = self.sidebar_h
                     self.mini_w = max(460, cfg.get("mini_w", 560))
                     self.mini_h = max(64, cfg.get("mini_h", 72))
                     self.custom_font_size = int(cfg.get("custom_font_size", 0))
@@ -1804,18 +1825,23 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
             f_hot_farm.pack(side=tk.TOP, fill=tk.X, pady=(0, 2))
             self.f_hot_farm = f_hot_farm
 
-            self.lbl_hot_map = StrokeLabel(f_hot_farm, text="🔥 แนะนำในโซน...", font=("Segoe UI", 7, "bold"),
+            self.lbl_hot_map = StrokeLabel(f_hot_farm, text="🔥 แนะนำ...", font=("Segoe UI", 6 if is_vert else 7, "bold"),
                                            fg="#fde047", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="w")
-            self.lbl_hot_map.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2, pady=1)
+            self.lbl_hot_map.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(2, 1), pady=1)
 
-            self.lbl_hot_rate = StrokeLabel(f_hot_farm, text="--%", font=("Consolas", 8, "bold"),
+            # ช่องตรงกลาง: ปริมาณดรอปที่ได้รับการ Boost แล้ว (ของโซนแนะนำโดยเฉพาะ)
+            self.lbl_hot_qty = StrokeLabel(f_hot_farm, text="-- N", font=("Consolas", 6 if is_vert else 7, "bold"),
+                                           fg="#facc15", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="center")
+            self.lbl_hot_qty.pack(side=tk.LEFT, padx=1, pady=1)
+
+            self.lbl_hot_rate = StrokeLabel(f_hot_farm, text="--%", font=("Consolas", 7 if is_vert else 8, "bold"),
                                             fg="#4ade80", bg=self.trans_key, stroke_color="#000000", stroke_width=1, anchor="e")
-            self.lbl_hot_rate.pack(side=tk.RIGHT, padx=2, pady=1)
+            self.lbl_hot_rate.pack(side=tk.RIGHT, padx=(1, 2), pady=1)
 
             # Mini CMD Terminal Box แสดงการตรวจจับ OCR / ระบบ Real-time (กรอบเส้นหน้าต่างตามสั่ง + StrokeLabel)
             f_cmd_box = tk.Frame(f_bot_action, bg="#08101a", bd=1, relief="solid",
                                  highlightbackground="#1e293b", highlightthickness=1)
-            f_cmd_box.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=(1, 0))
+            f_cmd_box.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=(1, 1))
             self.f_cmd_box = f_cmd_box
 
             # ปุ่ม Snap ปรับขนาดแนบขอบเกมอัตโนมัติ
@@ -1838,6 +1864,35 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
                     if w > 50:
                         self.txt_cmd.config(wraplength=max(80, w - 28))
             f_cmd_box.bind("<Configure>", _on_cmd_resize)
+
+            # ---------------------------------------------------------
+            # 📊 แถบสถานะด้านล่างสุด (Status Footer): Real Time | NXPC | Ping
+            # วางใต้ f_cmd_box เว้นระยะล่าง (pady=(0, 16)) เพื่อไม่ให้ชนกับ Grip (ขวาล่าง) และ ปุ่มแถบล่าง (ซ้ายล่าง)
+            # ---------------------------------------------------------
+            f_status_footer = tk.Frame(f_bot_action, bg="#08101a", bd=1, relief="solid",
+                                       highlightbackground="#1e293b", highlightthickness=1)
+            f_status_footer.pack(side=tk.TOP, fill=tk.X, pady=(1, 16))
+            self.f_status_footer = f_status_footer
+
+            # เวลาปัจจุบัน (ลดขนาดลง 2 เบอร์ตามสั่ง)
+            self.lbl_real_time = tk.Label(f_status_footer, text="00:00:00", font=("Consolas", 6 if is_vert else 7, "bold"),
+                                          fg="#38bdf8", bg="#08101a")
+            self.lbl_real_time.pack(side=tk.LEFT, padx=(2, 1), pady=1)
+
+            # ราคาเหรียญ NXPC (คลิกสลับ THB / USD ได้)
+            self.lbl_nxpc = tk.Label(f_status_footer, text="NXPC: $--", font=("Consolas", 5 if is_vert else 6, "bold"),
+                                     fg="#f59e0b", bg="#08101a", cursor="hand2")
+            self.lbl_nxpc.pack(side=tk.LEFT, padx=1, pady=1)
+            self.lbl_nxpc.bind("<Button-1>", lambda e: self.toggle_nxpc_currency())
+
+            # ขีดคั่น
+            tk.Label(f_status_footer, text="|", font=("Consolas", 5), fg="#334155", bg="#08101a").pack(side=tk.LEFT, padx=0)
+
+            # Server Ping & Req Counter (คลิกรีเซ็ตเคาน์เตอร์ได้)
+            self.lbl_ping = tk.Label(f_status_footer, text="📶 --ms", font=("Consolas", 5 if is_vert else 6, "bold"),
+                                     fg="#94a3b8", bg="#08101a", cursor="hand2")
+            self.lbl_ping.pack(side=tk.RIGHT, padx=(1, 2), pady=1)
+            self.lbl_ping.bind("<Button-1>", lambda e: self.reset_api_counter())
 
             # ---------------------------------------------------------
             # 🕹️ Grip ปรับขนาดมุมขวาล่างสุดของหน้าต่าง — place บน win_fg ตรึงมุมขวาล่างเสมอ
@@ -1888,9 +1943,11 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
         self.fetch_drop_data_async()
 
     def _update_nxpc_label(self):
+        val_str = f"฿{self.nxpc_thb:.2f}" if self.show_nxpc_thb else f"${self.nxpc_usd:.4f}"
         if getattr(self, 'lbl_nxpc', None) is not None and self.lbl_nxpc.winfo_exists():
-            val_str = f"฿{self.nxpc_thb:.2f}" if self.show_nxpc_thb else f"${self.nxpc_usd:.4f}"
             self.lbl_nxpc.config(text=f"NXPC: {val_str}")
+        if getattr(self, 'lbl_bp_nxpc', None) is not None and self.lbl_bp_nxpc.winfo_exists():
+            self.lbl_bp_nxpc.config(text=f"NXPC: {val_str}")
 
     def toggle_nxpc_currency(self):
         self.show_nxpc_thb = not self.show_nxpc_thb
@@ -1979,7 +2036,28 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
         except Exception:
             is_game_active = True
             
-        target_interval = 6 if is_game_active else 12
+        # 🔄 ตรวจสอบสถานะ: กำลังฟาร์ม / พัก / อยู่ในเมือง / พับจอเกม เพื่อปรับจังหวะการดึงข้อมูล Drop และ Nesolet แบบ Dynamic
+        is_tracking_farm = False
+        if hasattr(self, 'income_tracker') and getattr(self.income_tracker, 'is_tracking', False):
+            is_tracking_farm = True
+
+        is_in_town = getattr(self, 'is_in_town', False)
+
+        # คำนวณช่วงเวลารีเฟรชตามการใช้งานจริง:
+        # 1. อยู่ในเมือง (Town) -> ยืนนิ่งๆ ไม่มียอดดึงช้าๆ 60s
+        # 2. ฟาร์มอยู่ (Farming) -> ดึงไวเนียนตา 6s (ถ้าพับจอปรับเป็น 10s)
+        # 3. พัก/นอกรอบฟาร์ม (Idle/Paused) -> พักโควต้า 25s (ถ้าพับจอปรับเป็น 30s)
+        if is_in_town:
+            target_interval = 60
+            state_tag = " [Town]"
+        elif is_tracking_farm:
+            target_interval = 6 if is_game_active else 10
+            state_tag = " [Farm]" if is_game_active else " [Farm-Bg]"
+        else:
+            target_interval = 25 if is_game_active else 30
+            state_tag = " [Idle]" if is_game_active else " [Idle-Bg]"
+
+        self.current_poll_target_interval = target_interval
 
         # 🔄 เช็ครอบรีเฟรชข้อมูล Drop
         elapsed_fetch = time.time() - self.last_fetch_ts
@@ -1988,15 +2066,14 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
             self.fetch_drop_data_async()
             poll_remain = target_interval
 
-        # อัปเดตตัวนับเวลารีเช็คตรงกรอบสีแดง
+        # อัปเดตตัวนับเวลารีเช็คตรงกรอบสีแดง (นับถอยหลังตามค่าจริงที่แปรผันตามสถานะ)
         if hasattr(self, 'lbl_poll_countdown') and self.lbl_poll_countdown and self.lbl_poll_countdown.winfo_exists():
-            eco_tag = " [Eco]" if not is_game_active else ""
             if self.is_fetching:
                 self.lbl_poll_countdown.config(text="⏳ กำลังดึง...", fg="#38bdf8")
             elif self.neso_boost_stock in ["...", "รอเซิร์ฟเวอร์"] or self.neso_boost_rate in ["...", "รอข้อมูล"]:
-                self.lbl_poll_countdown.config(text=f"⏳ รอ ({poll_remain}s{eco_tag})", fg="#f59e0b")
+                self.lbl_poll_countdown.config(text=f"⏳ รอ ({poll_remain}s{state_tag})", fg="#f59e0b")
             else:
-                self.lbl_poll_countdown.config(text=f"🔄 {poll_remain}s{eco_tag}", fg="#94a3b8")
+                self.lbl_poll_countdown.config(text=f"🔄 {poll_remain}s{state_tag}", fg="#94a3b8")
 
 
 
@@ -2030,19 +2107,34 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
 
         self.win_bg.config(highlightbackground=theme_color)
 
-        # 🔍 Auto-Scan OCR เบื้องหลังความเร็วสูง (3.5s Active / 8s Eco)
-        scan_interval = 3.5 if is_game_active else 8.0
+        # ⚡ Smart Auto-Scan: เช็คการเปลี่ยนฉากด้วย White Masking + Black Screen (เบาหวิว 0.1ms ไม่กินเครื่อง)
+        # ตรวจสอบทุกๆ 1.2 วินาที ถ้าเกิดการเปลี่ยนแมพจริง (วาป/จอดำ/ตัวหนังสือเปลี่ยน) ถึงจะปลุก OCR
         now_ts = time.time()
+        if not hasattr(self, 'last_transition_check_ts'):
+            self.last_transition_check_ts = now_ts
         if not hasattr(self, 'last_auto_scan_ts'):
             self.last_auto_scan_ts = now_ts
-        if now_ts - self.last_auto_scan_ts >= scan_interval:
+
+        # 1. เช็คเหตุการณ์เปลี่ยนแมพแบบ Real-time ทุก 1.2 วินาที (หากเกม Active)
+        if is_game_active and (now_ts - self.last_transition_check_ts >= 1.2):
+            self.last_transition_check_ts = now_ts
+            if self.check_map_screen_transition():
+                self.last_auto_scan_ts = now_ts
+                self.auto_detect_map_async(silent=True)
+
+        # 2. Safety Heartbeat Check (กันเหนียว ตรวจจับสำรองทุก 45 วิ หรือ 15 วิถ้ายังไม่รู้แมพ)
+        safety_interval = 15.0 if not getattr(self, 'selected_layer_id', None) else 45.0
+        if now_ts - self.last_auto_scan_ts >= safety_interval:
             self.last_auto_scan_ts = now_ts
             self.auto_detect_map_async(silent=True)
 
-        # 🪙 ดึง Nesolet ประจำตัวละครเบื้องหลังทุก 20 วินาที (Silent ไม่รก Log)
+        # 🪙 ดึง Nesolet ประจำตัวละครเบื้องหลัง (Sync ตามสถานะ target_interval เดียวกันอย่างสมบูรณ์แบบ)
         if not hasattr(self, 'last_nesolet_fetch_ts'):
             self.last_nesolet_fetch_ts = now_ts
-        if now_ts - self.last_nesolet_fetch_ts >= 20.0:
+        
+        nesolet_poll_interval = getattr(self, 'current_poll_target_interval', 25.0)
+        
+        if now_ts - self.last_nesolet_fetch_ts >= nesolet_poll_interval:
             self.last_nesolet_fetch_ts = now_ts
             if getattr(self, 'current_char_asset_key', None):
                 threading.Thread(target=self._fetch_character_detail, args=(self.current_char_asset_key, self.current_char_name, True), daemon=True).start()
@@ -2064,6 +2156,8 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
                 self.lbl_real_date.config(text=date_str)
             if getattr(self, 'lbl_real_time', None) is not None and self.lbl_real_time.winfo_exists():
                 self.lbl_real_time.config(text=time_real_str)
+            if getattr(self, 'lbl_bp_real_time', None) is not None and self.lbl_bp_real_time.winfo_exists():
+                self.lbl_bp_real_time.config(text=time_real_str)
 
             if getattr(self, 'lbl_timer_text', None) is not None and self.lbl_timer_text.winfo_exists():
                 self.lbl_timer_text.config(text=countdown_str, fg=theme_color)
@@ -2084,10 +2178,15 @@ class TimerToolApp(ApiClientMixin, OcrEngineMixin, ModalsMixin):
             # Update red box info
             if getattr(self, 'lbl_last_update', None) is not None and self.lbl_last_update.winfo_exists():
                 self.lbl_last_update.config(text=f"🕒 {self.last_update_str}")
+            
+            ping_col = "#38ef7d" if self.server_ping_ms < 150 else "#f59e0b" if self.server_ping_ms < 300 else "#ef4444"
+            calls = getattr(self, 'api_call_count', 0)
+            ping_text = f"📶 {self.server_ping_ms}ms (Req:{calls})"
             if getattr(self, 'lbl_ping', None) is not None and self.lbl_ping.winfo_exists():
-                ping_col = "#38ef7d" if self.server_ping_ms < 150 else "#f59e0b" if self.server_ping_ms < 300 else "#ef4444"
-                calls = getattr(self, 'api_call_count', 0)
-                self.lbl_ping.config(text=f"📶 {self.server_ping_ms}ms (Req:{calls})", fg=ping_col)
+                self.lbl_ping.config(text=ping_text, fg=ping_col)
+            if getattr(self, 'lbl_bp_ping', None) is not None and self.lbl_bp_ping.winfo_exists():
+                self.lbl_bp_ping.config(text=ping_text, fg=ping_col)
+
             if hasattr(self, '_update_nxpc_label'):
                 self._update_nxpc_label()
 
