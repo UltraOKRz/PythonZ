@@ -53,6 +53,14 @@ class ApiClientMixin:
     def _fetch_wallet_neso_sync(self):
         """ดึงยอดเหรียญ NESO ในกระเป๋าผ่าน Official MSU OpenAPI"""
         self._fetch_nxpc_price_sync()
+        
+        # ⚡ จำกัดการยิง API Onchain Neso แค่ทุกๆ 60 วินาที เพื่อประหยัดโควต้า
+        now = time.time()
+        if not hasattr(self, 'wallet_last_fetch_ts'):
+            self.wallet_last_fetch_ts = 0
+        if now - self.wallet_last_fetch_ts < 60:
+            return
+            
         try:
             if not self.wallet_addr:
                 return
@@ -82,6 +90,9 @@ class ApiClientMixin:
                     offchain_val = int(offchain_raw) / (10**18)
                     self.wallet_nesolet_str = f"{offchain_val:,.1f}"
                     self.wallet_nesolet_compact = format_compact_number(offchain_val)
+                    
+            self.wallet_last_fetch_ts = now
+
         except Exception as e:
             print("Fetch wallet neso error:", e)
 

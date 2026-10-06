@@ -271,7 +271,17 @@ DEFAULT_API_KEYS = [
     "gw_91a3dc4dfa157a8971e67fb7e38d3add0fdd3f4dfc0caf21ac82fc29c650efee85c7920c8a113a09b7a4a670ba466fe9",
     "gw_2e28c1275962983782c1996afe9777f0fd2c232d9f49b880bc2ac9193d307ae0607cc6c5611568cfb5f157cfe90d93be",
     "gw_601054c06febe64bb1aac6bbd360599c8273827a81cf67479de827062c0824f3245b153d891624503b969e8187af721a",
-    "gw_a7485d00ca42c9d6b744293e656529288967509c8f932770c78700462f7dd964c0e8c1af10219bf6d920ecbabe5b6a39"
+    "gw_a7485d00ca42c9d6b744293e656529288967509c8f932770c78700462f7dd964c0e8c1af10219bf6d920ecbabe5b6a39",
+    "gw_cd6b168d8546323ae6649ddfaa4b03c81e1a24ac52905ffd49b779dd5fcaeb644bef268c57e56bf0a19e0da05b1b48b7",
+    "gw_7661eda48ea3a8059a23fb45ed1728e37c7e1fe6c76ba90466f1c2f3ea7e9d77c758ad60fea977bdb09ffcd697958b91",
+    "gw_d2afb1dead919243a7743afb04df9bbea29ba43564b827f6ddca863d8a9335b32864914e8fcb5381e2163c1ba8da87c5",
+    "gw_350ecf515176ff9748e4d6cfe7a2e080b8e590d28623f5a0b80bbb4419632a9f5c62624fc6237c01aa748ab3dfa6b5b5",
+    "gw_e9dfd537898b9f3eae6de931c72c6f6289324c84d4e8c62a20e62c3d5b13e4b63e256c4f22b2e00fbeaa5e51456c264d",
+    "gw_135ac9163d45942b707fe5a372ea9fe091505079c7b9632f8673fce668bb4111c85f92e28a7f6cb9d4b84d318edd53bd",
+    "gw_2e24cb3f4c2e1cea8d3faa3b9891ef248efdf409c9543605d22b82c2e9e2ef742812042a8bfd6b9e1b7272eb7240e0de",
+    "gw_dd722cf9d7c7dad6817c27faf8036d9cc0572132148324e5a23777696285fcc9f6b9f29079810788f115aa5df3f77220",
+    "gw_7a49af01ff1b10cb370ffd9da4a0ccfe0e88884013348ef9534e4d47c61c3fa375afa866ca337c75a7546915a2401c82",
+    "gw_e22dd89c5aa1340d948b542cb0854e2c93755a89f60b41ebd0dbecf0503d146714fbbc507e06ba264171d60d46ce7e1d"
 ]
 
 def get_api_keys():
@@ -297,7 +307,7 @@ def format_compact_number(num):
     try:
         n = float(num)
         if n >= 1_000_000:
-            return f"{n/1_000_000:.1f}M"
+            return f"{n/1_000_000:.2f}M"
         elif n >= 1_000:
             return f"{n/1_000:.1f}K"
         return f"{n:,.0f}"
@@ -314,7 +324,7 @@ def format_compact_stock(stock_str):
         return str(stock_str)[:6]
     n = int(digits)
     if n >= 1_000_000:
-        return f"{n/1_000_000:.1f}M"
+        return f"{n/1_000_000:.2f}M"
     elif n >= 1_000:
         return f"{n/1_000:.0f}K"
     return str(n)

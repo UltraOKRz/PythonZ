@@ -19,6 +19,11 @@ htmlcov/
 # IDE & OS files
 .vscode/
 .idea/
+.vs/
+bin/
+obj/
+*.user
+*.suo
 Thumbs.db
 Desktop.ini
 

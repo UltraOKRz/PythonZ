@@ -1,61 +1,59 @@
 {
-    "pos_x": 655,
-    "pos_y": 57,
-    "full_w": 201,
-    "full_h": 670,
-    "v2_w": 252,
-    "v2_h": 519,
-    "sidebar_w": 201,
-    "sidebar_h": 670,
+    "pos_x": 1366,
+    "pos_y": 9,
+    "full_w": 602,
+    "full_h": 827,
+    "sidebar_w": 602,
+    "sidebar_h": 827,
     "mini_w": 460,
     "mini_h": 64,
-    "custom_font_size": 7,
+    "custom_font_size": 18,
     "opacity": 1.0,
     "sound_enabled": true,
     "mode": "ServerTime",
     "server_name": "Fang",
-    "selected_layer_id": 132001,
-    "selected_layer_name": "Lachelein Alley",
-    "selected_group_name": "Arc. 190 ~ 240",
+    "selected_layer_id": "",
+    "selected_layer_name": "\u0e44\u0e21\u0e48\u0e1e\u0e1a",
+    "selected_group_name": "Arc. 30 ~ 100",
     "is_pinned": false,
     "is_mini": false,
-    "is_compact_folded": true,
+    "is_compact_folded": false,
     "wallet_addr": "0x69ca1eA12Be04DAFD27FB9164CB802878e846d16",
     "custom_ocr_region": {
-        "x": 54,
-        "y": 50,
-        "w": 177,
-        "h": 33,
+        "x": 51,
+        "y": 45,
+        "w": 144,
+        "h": 36,
         "abs": [
-            48,
-            39,
-            225,
-            72
+            83,
+            45,
+            227,
+            81
         ],
         "icon_w": 0,
         "red_box": [
             2,
             2,
-            175,
-            13
+            142,
+            20
         ],
         "blue_box": [
             2,
-            15,
-            175,
-            31
+            22,
+            142,
+            34
         ]
     },
     "custom_char_ocr_region": {
-        "x": 598,
-        "y": 673,
+        "x": 601,
+        "y": 670,
         "w": 50,
         "h": 22,
         "abs": [
-            592,
-            662,
-            642,
-            684
+            633,
+            670,
+            683,
+            692
         ]
     },
     "current_char_name": "LuZion",

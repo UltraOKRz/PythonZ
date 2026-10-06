@@ -743,6 +743,10 @@ class OcrEngineMixin:
                 if clean_name:
                     self._match_and_update_character(clean_name)
                 else:
+                    self.current_char_name = "ไม่พบ"
+                    self.current_char_asset_key = ""
+                    self.save_config()
+                    self.root.after(0, self.update_drop_ui)
                     if not silent:
                         self.log_cmd("❌ ไม่พบชื่อในกรอบตัวละคร")
         except Exception as e:
@@ -1060,6 +1064,13 @@ class OcrEngineMixin:
                     if not silent:
                         self.root.after(0, lambda: set_btn_state("❌ No Match", bg="#3d1b1b", fg="#f87171"))
                         self.root.after(1600, lambda: set_btn_state("🔍 Scan", bg="#16202c", fg="#38bdf8"))
+                    def apply_not_found():
+                        self.selected_layer_name = "ไม่พบ"
+                        self.selected_layer_id = ""
+                        self.is_in_town = False
+                        self.has_no_drop = True
+                        self.setup_ui_elements()
+                    self.root.after(0, apply_not_found)
                     return
 
                 matched_item = None
@@ -1652,26 +1663,31 @@ class OcrEngineMixin:
 
 
 
-                # ลำดับที่ 3: ไม่ตรงทั้ง Field และ Town
-                # 🛡️ หัวใจสำคัญ: ถ้าเป็นการ Auto-scan เบื้องหลัง (silent=True) ห้ามลบหรือเปลี่ยนแมพเดิมเด็ดขาด!
-                if silent:
+                # ลำดับที่ 3: ไม่ตรงกับฐานข้อมูลฟาร์มมอนสเตอร์ใดๆ (No Monster/Drop Field Matched)
+                # 🛡️ กฎหลัก: ถ้ามีข้อความ OCR หรือไม่มีเรตดรอปฟาร์ม ให้ถือเป็น Safe Zone (จุดปลอดภัย/นอกพื้นที่ฟาร์ม)
+                fallback_title = raw_title.strip() if raw_title else ""
+                fallback_sub = raw_sub.strip() if raw_sub else ""
+                display_name = fallback_title or fallback_sub or "จุดปลอดภัย"
+
+                def apply_fallback_safe_zone(s_name=fallback_sub, t_text=display_name):
+                    self.is_in_town = True
+                    self.has_no_drop = True
+                    self.current_town_name = t_text
+                    self.detected_submap_name = s_name if s_name else t_text
+                    self.selected_layer_name = f"🏙️ {t_text}"
+                    self.last_ocr_map_str = f"town:{t_text}"
+                    self.log_cmd(f"🛡️ Safe Zone (ไม่มีดรอป): {t_text}")
+                    self.setup_ui_elements()
+                    if not silent:
+                        set_btn_state("🏙️ Safe", bg="#1e293b", fg="#4ade80")
+                        self.root.after(1600, lambda: set_btn_state("🔍 Scan", bg="#16202c", fg="#38bdf8"))
+
+                # ถ้าระหว่าง Auto-scan อยู่ใน Safe Zone เดิมอยู่แล้ว ไม่ต้องรีเฟรชกระพริบ
+                if silent and self.is_in_town and (self.last_ocr_map_str == f"town:{display_name}"):
                     return
 
-                # ผู้ใช้กดปุ่ม Scan Map เอง
-                if raw_text and len(raw_text.strip()) >= 4:
-                    def apply_fallback_town(s_name=raw_sub, t_text=raw_text.split('\n')[0].strip()):
-                        self.is_in_town = True
-                        self.has_no_drop = True
-                        self.current_town_name = t_text if t_text else "ในเมือง"
-                        self.detected_submap_name = s_name if s_name else t_text
-                        self.selected_layer_name = f"🏙️ {self.current_town_name}"
-                        self.setup_ui_elements()
-                        set_btn_state("🏙️ Town", bg="#1e293b", fg="#94a3b8")
-                        self.root.after(1600, lambda: set_btn_state("🔍 Scan", bg="#16202c", fg="#38bdf8"))
-                    self.root.after(0, apply_fallback_town)
-                else:
-                    self.root.after(0, lambda: set_btn_state("❌ No Match", bg="#3d1b1b", fg="#f87171"))
-                    self.root.after(1600, lambda: set_btn_state("🔍 Scan", bg="#16202c", fg="#38bdf8"))
+                self.root.after(0, apply_fallback_safe_zone)
+                return
                 
         except Exception as e:
             print("OCR Error:", e)

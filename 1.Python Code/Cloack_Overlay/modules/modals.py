@@ -16,6 +16,28 @@ from modules.common import (
 )
 
 class ModalsMixin:
+    def attach_modal_resize_grip(self, window, min_w=200, min_h=200):
+        """เพื่มกริบ Resize สีแดงให้กับหน้าต่าง Modal (Toplevel) และระบบลากขยายหน้าต่าง"""
+        grip = tk.Label(window, text=" ◢ ", font=("Segoe UI", 8, "bold"), fg="#ffffff", bg="#dc2626", relief="solid", bd=1, highlightbackground="#ffffff", highlightthickness=1, cursor="size_nw_se", padx=2, pady=0)
+        grip.place(relx=1.0, rely=1.0, anchor="se")
+        grip.lift()
+
+        def start_rs(e):
+            window._rs_x = e.x_root
+            window._rs_y = e.y_root
+            window._rs_w = window.winfo_width()
+            window._rs_h = window.winfo_height()
+
+        def do_rs(e):
+            dx = e.x_root - window._rs_x
+            dy = e.y_root - window._rs_y
+            nw = max(min_w, window._rs_w + dx)
+            nh = max(min_h, window._rs_h + dy)
+            window.geometry(f"{nw}x{nh}")
+
+        grip.bind("<ButtonPress-1>", start_rs)
+        grip.bind("<B1-Motion>", do_rs)
+        return grip
     def open_wallet_explorer(self):
         addr = self.wallet_addr if self.wallet_addr else get_default_wallet()
         url = f"https://msu-explorer.xangle.io/address/{addr}"
@@ -37,6 +59,7 @@ class ModalsMixin:
         p_win.config(bg="#121721", highlightbackground="#00f2fe", highlightthickness=1)
         p_win.attributes("-topmost", True)
         p_win.overrideredirect(True)
+        self.attach_modal_resize_grip(p_win)
 
         hdr = tk.Frame(p_win, bg="#1a2230")
         hdr.pack(fill=tk.X)
@@ -91,6 +114,7 @@ class ModalsMixin:
         self.wallet_modal_win.config(bg="#0f141d", highlightbackground="#a855f7", highlightthickness=1)
         self.wallet_modal_win.attributes("-topmost", True)
         self.wallet_modal_win.overrideredirect(True)
+        self.attach_modal_resize_grip(self.wallet_modal_win)
 
         def start_drag_wal(e):
             self.wallet_modal_win.dx = e.x_root - self.wallet_modal_win.winfo_x()
@@ -225,6 +249,7 @@ class ModalsMixin:
         self.bottom_panel_win.config(bg="#121721", highlightbackground="#00f2fe", highlightthickness=1)
         self.bottom_panel_win.attributes("-topmost", True)
         self.bottom_panel_win.overrideredirect(True)
+        self.attach_modal_resize_grip(self.bottom_panel_win)
 
         def start_drag_bp(e):
             self.bottom_panel_win.dx = e.x_root - self.bottom_panel_win.winfo_x()
@@ -315,10 +340,6 @@ class ModalsMixin:
         btn_scout.pack(side=tk.RIGHT)
         btn_scout.bind("<Button-1>", lambda e: self.open_wallet_explorer())
 
-        self.lbl_poll_countdown = tk.Label(row3, text="🔄 60s", font=("Segoe UI", 8, "bold"), fg="#94a3b8", bg="#121721", cursor="hand2")
-        self.lbl_poll_countdown.pack(side=tk.RIGHT, padx=4)
-        self.lbl_poll_countdown.bind("<Button-1>", lambda e: self.trigger_scan_and_refresh())
-
         # 📦 พื้นที่วางปุ่มโมดูลเสริม (Mod Button Bar - เรียงจากซ้ายไปขวา)
         f_modules = tk.Frame(self.bottom_panel_win, bg="#0d1117", bd=1, relief="solid", highlightbackground="#1e293b", highlightthickness=1)
         f_modules.pack(fill=tk.BOTH, expand=True, padx=8, pady=(2, 8))
@@ -374,6 +395,7 @@ class ModalsMixin:
         self.map_picker_win.config(bg="#121721", highlightbackground="#00f2fe", highlightthickness=1)
         self.map_picker_win.attributes("-topmost", True)
         self.map_picker_win.overrideredirect(True)
+        self.attach_modal_resize_grip(self.map_picker_win)
         
         # หัวหน้าต่างเลือกแมพ
         hdr = tk.Frame(self.map_picker_win, bg="#1a2230")
@@ -470,6 +492,7 @@ class ModalsMixin:
         self.settings_win.config(bg="#121721", highlightbackground="#00f2fe", highlightthickness=1)
         self.settings_win.attributes("-topmost", True)
         self.settings_win.overrideredirect(True)
+        self.attach_modal_resize_grip(self.settings_win)
         
         def start_drag_set(e):
             self.settings_win.dx = e.x_root - self.settings_win.winfo_x()
@@ -540,11 +563,40 @@ class ModalsMixin:
         sz_box = tk.Frame(f_sz, bg="#121721")
         sz_box.pack(fill=tk.X, pady=1)
         
-        sizes = [("📱 แถบซ้าย", 170, 380), ("S เล็ก", 245, 385), ("M กลาง", 265, 410), ("L ใหญ่", 460, 355)]
+        sizes = [("📱 แถบซ้าย", 184, 768), ("S เล็ก", 245, 600), ("M กลาง", 320, 650), ("L ใหญ่", 450, 700)]
         for label, sw, sh in sizes:
-            btn_sz = tk.Label(sz_box, text=label, font=("Segoe UI", 7, "bold"), bg="#1e293b", fg="#e2e8f0", cursor="hand2", padx=6, pady=2)
-            btn_sz.pack(side=tk.LEFT, padx=2)
-            btn_sz.bind("<Button-1>", lambda e, w=sw, h=sh: [setattr(self, 'is_compact_folded', (w <= 240)), self.set_preset_size(w, h)])
+            btn_sz = tk.Label(sz_box, text=label, font=("Segoe UI", 7, "bold"), bg="#1e293b", fg="#e2e8f0", cursor="hand2", padx=5, pady=2)
+            btn_sz.pack(side=tk.LEFT, padx=1)
+            btn_sz.bind("<Button-1>", lambda e, w=sw, h=sh: [setattr(self, 'is_compact_folded', False), self.set_preset_size(w, h)])
+
+        # 🎛️ กำหนดขนาดเอง (Custom Resolution W x H)
+        f_custom_sz = tk.Frame(f_sz, bg="#121721")
+        f_custom_sz.pack(fill=tk.X, pady=(3, 1))
+        tk.Label(f_custom_sz, text="กำหนดเอง:", font=("Segoe UI", 7), fg="#94a3b8", bg="#121721").pack(side=tk.LEFT, padx=(0, 2))
+        
+        ent_w = tk.Entry(f_custom_sz, width=4, font=("Consolas", 8), bg="#1e293b", fg="#00f2fe", insertbackground="#00f2fe", bd=1, relief="solid")
+        ent_w.insert(0, str(getattr(self, 'full_w', 184)))
+        ent_w.pack(side=tk.LEFT, padx=1)
+        
+        tk.Label(f_custom_sz, text="x", font=("Consolas", 8), fg="#64748b", bg="#121721").pack(side=tk.LEFT, padx=1)
+        
+        ent_h = tk.Entry(f_custom_sz, width=4, font=("Consolas", 8), bg="#1e293b", fg="#00f2fe", insertbackground="#00f2fe", bd=1, relief="solid")
+        ent_h.insert(0, str(getattr(self, 'full_h', 768)))
+        ent_h.pack(side=tk.LEFT, padx=1)
+
+        def apply_custom_res():
+            try:
+                rw = int(ent_w.get().strip())
+                rh = int(ent_h.get().strip())
+                if rw >= 150 and rh >= 300:
+                    self.set_preset_size(rw, rh)
+                    self.log_cmd(f"📐 กำหนดขนาด: {rw}x{rh}")
+            except Exception as e:
+                pass
+
+        btn_apply_sz = tk.Label(f_custom_sz, text="ใช้ขนาดนี้", font=("Segoe UI", 7, "bold"), bg="#0284c7", fg="#ffffff", cursor="hand2", padx=4, pady=1)
+        btn_apply_sz.pack(side=tk.LEFT, padx=3)
+        btn_apply_sz.bind("<Button-1>", lambda e: apply_custom_res())
 
         # 🔤 3.1 ปรับขนาดตัวอักษรเองตามใจผู้ใช้ (Font Size Scaling) - ครอบคลุมทั้งโหมด 1 และ 2
         f_font = tk.Frame(self.settings_win, bg="#121721")

@@ -1,15 +1,15 @@
 {
   "last_reset_date": "2026-10-06",
-  "start_day_neso": 712205.24554,
+  "start_day_neso": 117800.0,
   "today_minted_neso": 307647.16,
   "days": [
     {
       "date": "2026-10-06",
       "minted_neso": 307647.16,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 0.72,
-      "est_thb": 24.27,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "12:15:51",
@@ -41,10 +41,10 @@
     {
       "date": "2026-10-05",
       "minted_neso": 797386.15,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 1.87,
-      "est_thb": 62.91,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "18:00:47",
@@ -61,10 +61,10 @@
     {
       "date": "2026-10-03",
       "minted_neso": 2897.77,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 0.01,
-      "est_thb": 0.23,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "15:48:42",
@@ -76,10 +76,10 @@
     {
       "date": "2026-10-02",
       "minted_neso": 34055.21,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 0.08,
-      "est_thb": 2.69,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "19:22:32",
@@ -91,10 +91,10 @@
     {
       "date": "2026-10-01",
       "minted_neso": 219988.92,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 0.52,
-      "est_thb": 17.36,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "22:34:01",
@@ -111,10 +111,10 @@
     {
       "date": "2026-09-30",
       "minted_neso": 805727.77,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 1.89,
-      "est_thb": 63.57,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "00:16:24",
@@ -146,10 +146,10 @@
     {
       "date": "2026-09-28",
       "minted_neso": 253000.0,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 0.59,
-      "est_thb": 19.96,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "15:54:33",
@@ -161,10 +161,10 @@
     {
       "date": "2026-09-27",
       "minted_neso": 204120.5,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 0.48,
-      "est_thb": 16.11,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "19:17:13",
@@ -181,10 +181,10 @@
     {
       "date": "2026-09-26",
       "minted_neso": 734427.59,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 1.72,
-      "est_thb": 57.95,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "13:50:53",
@@ -215,11 +215,11 @@
     },
     {
       "date": "2026-09-25",
-      "minted_neso": 575148.67,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 1.35,
-      "est_thb": 45.38,
+      "minted_neso": 256343.14,
+      "nxpc_usd": 0.0,
+      "nxpc_thb": 0.0,
+      "est_usd": 0.0,
+      "est_thb": 0.0,
       "details": [
         {
           "time": "04:26:44",
@@ -245,31 +245,6 @@
           "time": "02:17:37",
           "neso": 16234.59,
           "hash": "0xb78c708527b1b62ba84852911b339f69102e7e414c8233844e0014aff176246e"
-        },
-        {
-          "time": "13:57:27",
-          "neso": 318805.53,
-          "hash": "0x4d85d3e7665eec7c348f526d518af35c45ef0643ebae5606d9eda600c05a7a1c"
-        }
-      ]
-    },
-    {
-      "date": "2026-09-23",
-      "minted_neso": 126983.17,
-      "nxpc_usd": 0.234361,
-      "nxpc_thb": 7.89,
-      "est_usd": 0.3,
-      "est_thb": 10.02,
-      "details": [
-        {
-          "time": "02:00:08",
-          "neso": 56881.02,
-          "hash": "0x23f12f4b55e795d2f9c516b76cdde4b26d2588cac925d81be6538ea4e2ee5033"
-        },
-        {
-          "time": "00:41:54",
-          "neso": 70102.15,
-          "hash": "0x4e2a2e14ebfc30a0e5611e2857bd0b846e9e1ec8db8b7b3ca4f528a439fbbb16"
         }
       ]
     }
